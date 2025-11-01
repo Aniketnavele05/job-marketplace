@@ -2,16 +2,96 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import FileExtensionValidator
 
-# Create your models here.
-
+# -------------------------
+# Custom User
+# -------------------------
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
         ('talent','Talent'),
         ('recruiter','Recruiter')
     )
 
-    user_type = models.CharField( max_length=20,choices=USER_TYPE_CHOICES,default='talent')
+    user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='talent')
+    email = models.EmailField(unique=True)  # unique email for authentication
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+# -------------------------
+# Talent models
+# -------------------------
+class Skill(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    category = models.CharField(max_length=50, blank=True, null=True)  # optional: Backend, Frontend, Soft skill
 
     def __str__(self):
-        return f'{self.username} = {self.user_type}'
-    
+        return self.name
+
+class TalentProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='talent_profile')
+    dob = models.DateField()
+    location = models.CharField(max_length=50, blank=True)
+    skills = models.ManyToManyField(Skill, blank=True)
+    resume = models.FileField(
+        upload_to='resumes/',
+        validators=[FileExtensionValidator(['pdf','doc','docx'])]
+    )
+    looking_for_titles = models.ManyToManyField('JobTitle', blank=True)
+    looking_for_types = models.ManyToManyField('JobType', blank=True)
+    looking_for_locations = models.ManyToManyField('Location', blank=True)
+
+class Experience(models.Model):
+    profile = models.ForeignKey(TalentProfile, on_delete=models.CASCADE, related_name='experiences')
+    company_name = models.CharField(max_length=150)
+    role = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    months = models.FloatField(help_text='Duration in months', null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.profile.user.username} at {self.company_name}'
+
+# -------------------------
+# Job & Location models
+# -------------------------
+class JobTitle(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class JobType(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Location(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class JobPreference(models.Model):
+    profile = models.OneToOneField(TalentProfile, on_delete=models.CASCADE, related_name='preferences')
+    desired_titles = models.ManyToManyField(JobTitle, blank=True, related_name='preferred_by_talents')
+    job_types = models.ManyToManyField(JobType, blank=True, related_name='preferred_by_talents')
+    preferred_locations = models.ManyToManyField(Location, blank=True, related_name='preferred_by_talents')
+
+# -------------------------
+# Recruiter models
+# -------------------------
+class RecruiterProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='recruiter_profile')
+    company_name = models.CharField(max_length=150)
+    company_description = models.TextField(blank=True)
+    company_website = models.URLField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True)
+    logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.company_name})"
