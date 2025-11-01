@@ -18,15 +18,17 @@ class CustomUser(AbstractUser):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+
 # -------------------------
 # Talent models
 # -------------------------
 class Skill(models.Model):
     name = models.CharField(max_length=50, unique=True)
-    category = models.CharField(max_length=50, blank=True, null=True)  # optional: Backend, Frontend, Soft skill
+    category = models.CharField(max_length=50, blank=True, null=True)  # e.g., Backend, Frontend, Soft skill
 
     def __str__(self):
         return self.name
+
 
 class TalentProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='talent_profile')
@@ -37,9 +39,10 @@ class TalentProfile(models.Model):
         upload_to='resumes/',
         validators=[FileExtensionValidator(['pdf','doc','docx'])]
     )
-    looking_for_titles = models.ManyToManyField('JobTitle', blank=True)
-    looking_for_types = models.ManyToManyField('JobType', blank=True)
-    looking_for_locations = models.ManyToManyField('Location', blank=True)
+
+    def __str__(self):
+        return self.user.username
+
 
 class Experience(models.Model):
     profile = models.ForeignKey(TalentProfile, on_delete=models.CASCADE, related_name='experiences')
@@ -53,6 +56,7 @@ class Experience(models.Model):
     def __str__(self):
         return f'{self.profile.user.username} at {self.company_name}'
 
+
 # -------------------------
 # Job & Location models
 # -------------------------
@@ -62,11 +66,13 @@ class JobTitle(models.Model):
     def __str__(self):
         return self.name
 
+
 class JobType(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
+
 
 class Location(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -74,11 +80,16 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
+
 class JobPreference(models.Model):
     profile = models.OneToOneField(TalentProfile, on_delete=models.CASCADE, related_name='preferences')
     desired_titles = models.ManyToManyField(JobTitle, blank=True, related_name='preferred_by_talents')
     job_types = models.ManyToManyField(JobType, blank=True, related_name='preferred_by_talents')
     preferred_locations = models.ManyToManyField(Location, blank=True, related_name='preferred_by_talents')
+
+    def __str__(self):
+        return f"Preferences of {self.profile.user.username}"
+
 
 # -------------------------
 # Recruiter models
