@@ -41,15 +41,16 @@ class Location(models.Model):
         return self.name
     
 
+
 class TalentProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='talent_profile')
-    dob = models.DateField()
+    dob = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=50, blank=True)
     skills = models.ManyToManyField(Skill, blank=True)
-    Email = models.EmailField(max_length=254)
     resume = models.FileField(
         upload_to='resumes/',
-        validators=[FileExtensionValidator(['pdf','doc','docx'])]
+        validators=[FileExtensionValidator(['pdf','doc','docx'])],
+        null=True, blank=True
     )
 
     def __str__(self):
@@ -65,7 +66,7 @@ class JobPreference(models.Model):
     )
     profile = models.OneToOneField(TalentProfile, on_delete=models.CASCADE, related_name='preferences')
     desired_titles = models.ManyToManyField(JobTitle, blank=True, related_name='preferred_by_talents')
-    job_types = models.CharField( max_length=20,choices=JobType,null=False,blank=False,default='OPEN_TO_ALL')
+    job_types = models.CharField(max_length=20, choices=JobType, null=False, blank=False, default='Open to all')
     preferred_locations = models.ManyToManyField(Location, blank=True, related_name='preferred_by_talents')
 
     def __str__(self):
@@ -83,13 +84,6 @@ class Experience(models.Model):
 
     def __str__(self):
         return f'{self.profile.user.username} at {self.company_name}'
-
-
-# -------------------------
-# Job & Location models
-# ------------------------
-
-
 
 
 # -------------------------
