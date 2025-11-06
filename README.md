@@ -33,10 +33,7 @@ The goal is to demonstrate **full-cycle web development skills** — from backen
 - **Django REST Framework** — for building APIs
 - **MySQL** — for database
 - **WebSockets** (optional) — for chat functionality
-
-
-
-
+- 
 ---
 
 ## 💡 Key Features
@@ -52,10 +49,6 @@ The goal is to demonstrate **full-cycle web development skills** — from backen
 - 📨 **Chat System**
   - One-to-one chat between recruiter and candidate
   - Real-time updates (WebSocket/Channels-based or API-based)
-
-- 📊 **Dynamic Dashboard**
-  - API-driven data fetching for displaying job analytics and messages
-  - Clean, responsive interface with navigation bar
 
 - ⚡ **API Integration**
   - REST APIs for fetching jobs, messages, and user profiles
