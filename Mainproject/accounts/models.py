@@ -101,3 +101,45 @@ class RecruiterProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.company_name})"
+
+# job content
+class JobContent(models.Model):
+    JobType = (
+        ('Full_time','FULL_TIME'),
+        ('Part_time','PART_TIME'),
+        ('Remote','Remote')
+    )
+    recruiter = models.ForeignKey(RecruiterProfile, on_delete=models.CASCADE)
+    creation_date = models.DateTimeField( auto_now_add=True)
+    job_title = models.CharField(max_length=100)
+    job_role = models.ManyToManyField(JobTitle,blank=False)
+    needed_skills = models.ManyToManyField(Skill,blank=False)
+    job_type = models.CharField( max_length=50,choices=JobType)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    salary_min = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
+    salary_max = models.DecimalField( max_digits=10, decimal_places=2,blank=True,null=True)
+    currency = models.CharField( max_length=10,blank=True,default='INR')
+    benefits = models.CharField(max_length=500,blank=True)
+    job_description = models.TextField()
+    is_active = models.BooleanField(default=True)
+    experience_level = models.CharField(
+    max_length=50,
+    choices=[
+        ('Internship', 'Internship'),
+        ('Entry Level', 'Entry Level'),
+        ('Mid Level', 'Mid Level'),
+        ('Senior Level', 'Senior Level'),
+    ],blank=True,)
+    apply_email = models.EmailField(blank=True, null=True)
+
+
+    @property
+    def job_company(self):
+        return self.recruiter.company_name
+    
+    @property
+    def job_company_website(self):
+        return self.recruiter.company_website
+    
+    def __str__(self):
+        return f"{self.job_title} at {self.recruiter.company_name}"

@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from .forms import TalentRegistrationForm, RecruiterRegistrationForm
+from .models import JobContent , TalentProfile , RecruiterProfile
+from rest_framework import viewsets , permissions
+from .serializers import JobContentSerializer
 
 # Talent Registration
 def TalentRegForm(request):
@@ -10,7 +13,7 @@ def TalentRegForm(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Talent account created successfully! Please login.")
-            return redirect('login')
+            return redirect( 'login')
     else:
         form = TalentRegistrationForm()
     return render(request, 'register_talent.html', {'form': form})
@@ -64,3 +67,29 @@ def talent_dashboard(request):
 
 def recruiter_dashboard(request):
     return render(request, 'recruiter_dashboard.html')
+
+
+
+# Job content view
+class JobContentView(viewsets.ModelViewSet):
+    queryset = JobContent.objects.all().order_by('-creation_date')
+    serializer_class = JobContentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        recruiter = RecruiterProfile.objects.get(
+            user=self.request.user,
+            company_name=recruiter.company_name,
+            company_website=recruiter.company_website
+            )
+        serializer.save(recruiter=recruiter)
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'recruiter_profile'):
+            recruiter = RecruiterProfile.objects.get(user=user)
+            return JobContent.objects.filter(recruiter=recruiter)
+        elif hasattr(user, 'talent_profile'):
+            return JobContent.objects.filter(is_active = True)
+        else:
+            return JobContent.objects.none()
