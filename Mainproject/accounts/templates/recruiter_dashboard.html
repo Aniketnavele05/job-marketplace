@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recruiter Dashboard</title>
+
+  <style>
+    body { margin: 0; font-family: "Poppins", sans-serif; background-color: #f8f9fa; color: #333; }
+    .navbar { display: flex; justify-content: space-between; align-items: center; background-color: #fff; padding: 14px 28px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 1000; }
+    .navbar .logo { font-size: 1.4rem; font-weight: bold; color: #dc3545; }
+    .nav-links { display: flex; align-items: center; gap: 16px; }
+    .nav-links a { text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 20px; transition: 0.3s ease; }
+    .nav-links a.chat { background-color: #dc3545; color: #fff; box-shadow: 0 2px 5px rgba(220,53,69,0.3); }
+    .nav-links a.chat:hover { background-color: #b02a37; }
+    .nav-links a.profile { color: #333; border: 1px solid #ccc; background-color: #fff; }
+    .nav-links a.profile:hover { background-color: #e9ecef; }
+    .nav-links a.logout { color: #dc3545; border: 1px solid #dc3545; background-color: #fff; }
+    .nav-links a.logout:hover { background-color: #dc3545; color: white; }
+    .hero { padding: 60px 20px; text-align: center; background: #dc3545; }
+    .hero h1 { color: white; font-size: 1.8rem; margin-bottom: 10px; }
+    .hero p { color: white; font-size: 1.1rem; }
+    .job-card { background-color: #fff; margin: 20px auto; padding: 20px; width: 80%; max-width: 700px; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .job-title { font-size: 1.3rem; color: #dc3545; margin-bottom: 8px; }
+    .company { color: #555; margin-bottom: 12px; font-weight: 500; }
+    .details { color: #666; font-size: 0.95rem; line-height: 1.5; margin-bottom: 10px; }
+    .salary { font-weight: bold; color: #dc3545; margin-bottom: 14px; }
+    .apply-btn { display: inline-block; background-color: #dc3545; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; transition: background 0.3s; }
+    .apply-btn:hover { background-color: #b02a37; }
+    .add-job-btn { position: fixed; bottom: 30px; right: 30px; background-color: #dc3545; color: white; border: none; border-radius: 50px; padding: 10px 15px; font-size: 20px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 1000; transition: all 0.3s ease; }
+    .add-job-btn:hover { background-color: #b02a37 }
+    .job-form-container { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); z-index: 1001; width: 90%; max-width: 600px; overflow-y: auto; max-height: 90vh; }
+    .job-form-container h2 { text-align: center; color: #dc3545; margin-bottom: 20px; }
+    .job-form-container label { display: block; font-weight: 600; margin-top: 12px; margin-bottom: 6px; color: #333; }
+    .job-form-container input, .job-form-container select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; margin-bottom: 12px; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+    .job-form-container input:focus, .job-form-container select:focus { border-color: #dc3545; box-shadow: 0 0 6px rgba(220,53,69,0.3); outline: none; }
+    select[multiple] { height: auto; min-height: 120px; overflow-y: auto; }
+    .job-form-container button[type="submit"] { background-color: #dc3545; color: #fff; font-weight: 700; border: none; border-radius: 25px; padding: 10px 20px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 10px; }
+    .job-form-container button[type="submit"]:hover { background-color: #b02a37; }
+    .job-form-container .cancel-btn { background-color: #ccc; color: #333; border: none; border-radius: 25px; padding: 10px 20px; margin-left: 10px; cursor: pointer; transition: background-color 0.3s ease; }
+    .job-form-container .cancel-btn:hover { background-color: #999; }
+    select[multiple]::-webkit-scrollbar { width: 8px; }
+    select[multiple]::-webkit-scrollbar-thumb { background-color: rgba(220,53,69,0.5); border-radius: 4px; }
+    select[multiple]::-webkit-scrollbar-track { background-color: #f1f1f1; border-radius: 4px; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">Founditt.</div>
+    <div class="nav-links">
+      <a href="#" class="chat">Chat</a>
+      <a href="#" class="profile">Profile</a>
+      <a href="#" class="logout">Logout</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>Welcome, Recruiter!</h1>
+    <p>Manage your job postings, applications, and chat with talents here.</p>
+  </section>
+
+  <div id="job-list"></div>
+
+  <button class="add-job-btn" onclick="toggleForm()">＋</button>
+
+  <div class="job-form-container" id="jobFormContainer">
+    <h2>Add New Job</h2>
+    <form id="jobForm" onsubmit="addJob(event)">
+      <label for="job_title">Job Title</label>
+      <input type="text" id="job_title" placeholder="Enter job title" required>
+      <label for="job_description">Job Description</label>
+      <input type="text" id="job_description" placeholder="Enter job description" required>
+      <label for="skillSelect">Select Required Skills</label>
+      <select id="skillSelect" multiple required></select>
+      <label for="roleSelect">Select Job Roles</label>
+      <select id="roleSelect" multiple required></select>
+      <label for="locationSelect">Select Job Location</label>
+      <select id="locationSelect" required></select>
+      <label for="job_type">Select Job Type</label>
+      <select id="job_type" required></select>
+      <label for="salary_min">Minimum Salary</label>
+      <input type="number" id="salary_min" placeholder="Enter minimum salary" required>
+      <label for="salary_max">Maximum Salary</label>
+      <input type="number" id="salary_max" placeholder="Enter maximum salary" required>
+      <label for="experience_level">Select Experience Level</label>
+      <select id="experience_level" required></select>
+      <label for="apply_email">Apply Email</label>
+      <input type="email" id="apply_email" placeholder="Enter apply email" required>
+      <div style="margin-top:15px;">
+        <button type="submit">Post Job</button>
+        <button type="button" class="cancel-btn" onclick="toggleForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    axios.defaults.withCredentials = true;
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        document.cookie.split(';').forEach(cookie => {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name + '=')) cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        });
+      }
+      return cookieValue;
+    }
+    axios.defaults.headers.post['X-CSRFToken'] = getCookie('csrftoken');
+
+    document.addEventListener("DOMContentLoaded", () => {
+      window.toggleForm = () => {
+        const form = document.getElementById("jobFormContainer");
+        form.style.display = form.style.display === "block" ? "none" : "block";
+      }
+
+      async function loadDropdowns() {
+        try {
+          const [skills, locations, roles, choices] = await Promise.all([
+            axios.get('http://127.0.0.1:8000/api/skills/'),
+            axios.get('http://127.0.0.1:8000/api/locations/'),
+            axios.get('http://127.0.0.1:8000/api/jobroles/'),
+            axios.get('http://127.0.0.1:8000/api/jobs-choices/')
+          ]);
+
+          const skillSelect = document.getElementById("skillSelect");
+          skills.data.forEach(s => skillSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+
+          const locSelect = document.getElementById("locationSelect");
+          locations.data.forEach(l => locSelect.innerHTML += `<option value="${l.id}">${l.name}</option>`);
+
+          const roleSelect = document.getElementById("roleSelect");
+          roles.data.forEach(r => roleSelect.innerHTML += `<option value="${r.id}">${r.name}</option>`);
+
+          const { job_type_choices, experience_level_choices } = choices.data;
+          const jobTypeSelect = document.getElementById("job_type");
+          const expSelect = document.getElementById("experience_level");
+
+          job_type_choices.forEach(([value, label]) => { jobTypeSelect.innerHTML += `<option value="${value}">${label}</option>` });
+          experience_level_choices.forEach(([value, label]) => { expSelect.innerHTML += `<option value="${value}">${label}</option>` });
+
+          console.log("✅ Dropdowns populated successfully");
+        } catch (err) {
+          console.error("❌ Error loading dropdowns:", err);
+        }
+      }
+
+      function loadJobs() {
+        axios.get("http://127.0.0.1:8000/api/jobs/")
+          .then(res => {
+            const container = document.getElementById("job-list");
+            container.innerHTML = "";
+            if (!res.data.length) {
+              container.innerHTML = "<p style='text-align:center;'>No jobs available right now.</p>";
+              return;
+            }
+            res.data.forEach(job => {
+              const jobCard = document.createElement("div");
+              jobCard.classList.add("job-card");
+              jobCard.innerHTML = `
+                <h2 class="job-title">${job.job_title || "Untitled Role"}</h2>
+                <div class="company">${job.job_company || "Unknown Company"}</div>
+                <div class="details">
+                  <strong>Type:</strong> ${job.job_type || "N/A"}<br/>
+                  <strong>Experience:</strong> ${job.experience_level || "N/A"}<br/>
+                  <strong>Roles:</strong> ${Array.isArray(job.job_role)? job.job_role.map(r=>r.name).join(", "):"N/A"}<br/>
+                  <strong>Skills:</strong> ${Array.isArray(job.needed_skills)? job.needed_skills.map(s=>s.name).join(", "):"N/A"}<br/>
+                </div>
+                <div class="salary">₹${parseInt(job.salary_min)||0} - ₹${parseInt(job.salary_max)||0} ${job.currency||""}</div>
+                <a href="${job.job_company_website||"#"}" class="apply-btn" target="_blank">Visit Company</a>
+              `;
+              container.appendChild(jobCard);
+            });
+          })
+          .catch(err => {
+            console.error("Error fetching jobs:", err);
+            document.getElementById("job-list").innerHTML = "<p style='text-align:center;color:red;'>Failed to load jobs.</p>";
+          });
+      }
+
+      window.addJob = (event) => {
+        event.preventDefault();
+        const skillSelect = document.getElementById("skillSelect");
+        const roleSelect = document.getElementById("roleSelect");
+        const locSelect = document.getElementById("locationSelect");
+
+        const newJob = {
+          job_title: document.getElementById("job_title").value,
+          job_description: document.getElementById("job_description").value,
+          job_type: document.getElementById("job_type").value,
+          experience_level: document.getElementById("experience_level").value,
+          salary_min: parseInt(document.getElementById("salary_min").value),
+          salary_max: parseInt(document.getElementById("salary_max").value),
+          location: parseInt(locSelect.value),
+          needed_skills: Array.from(skillSelect.selectedOptions).map(o => parseInt(o.value)),
+          job_role: Array.from(roleSelect.selectedOptions).map(o => parseInt(o.value)),
+          apply_email: document.getElementById("apply_email").value,
+          currency: "INR",
+          is_active: true,
+          recruiter: 1  // replace with actual recruiter ID if needed
+        };
+
+        console.log("Posting job payload:", newJob);
+
+        axios.post("http://127.0.0.1:8000/api/jobs/", newJob)
+          .then(res => {
+            alert("✅ Job posted successfully!");
+            document.getElementById("jobForm").reset();
+            toggleForm();
+            loadJobs();
+          })
+          .catch(err => {
+            console.error("Error posting job:", err.response?.data || err);
+            alert("❌ Failed to post job. Check console for details.");
+          });
+      }
+
+      loadDropdowns();
+      loadJobs();
+    });
+  </script>
+</body>
+</html>

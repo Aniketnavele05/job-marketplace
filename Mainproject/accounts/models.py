@@ -28,7 +28,7 @@ class Skill(models.Model):
     def __str__(self):
         return self.name
 
-class JobTitle(models.Model):
+class JobRole(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -65,7 +65,7 @@ class JobPreference(models.Model):
         ('Open to all','OPEN_TO_ALL')
     )
     profile = models.OneToOneField(TalentProfile, on_delete=models.CASCADE, related_name='preferences')
-    desired_titles = models.ManyToManyField(JobTitle, blank=True, related_name='preferred_by_talents')
+    desired_titles = models.ManyToManyField(JobRole, blank=True, related_name='preferred_by_talents')
     job_types = models.CharField(max_length=20, choices=JobType, null=False, blank=False, default='Open to all')
     preferred_locations = models.ManyToManyField(Location, blank=True, related_name='preferred_by_talents')
 
@@ -109,10 +109,16 @@ class JobContent(models.Model):
         ('Part_time','PART_TIME'),
         ('Remote','Remote')
     )
+    ExperienceLevelChoices= [
+        ('Internship', 'Internship'),
+        ('Entry Level', 'Entry Level'),
+        ('Mid Level', 'Mid Level'),
+        ('Senior Level', 'Senior Level'),
+    ]
     recruiter = models.ForeignKey(RecruiterProfile, on_delete=models.CASCADE)
     creation_date = models.DateTimeField( auto_now_add=True)
     job_title = models.CharField(max_length=100)
-    job_role = models.ManyToManyField(JobTitle,blank=False)
+    job_role = models.ManyToManyField(JobRole,blank=False)
     needed_skills = models.ManyToManyField(Skill,blank=False)
     job_type = models.CharField( max_length=50,choices=JobType)
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
@@ -122,14 +128,7 @@ class JobContent(models.Model):
     benefits = models.CharField(max_length=500,blank=True)
     job_description = models.TextField()
     is_active = models.BooleanField(default=True)
-    experience_level = models.CharField(
-    max_length=50,
-    choices=[
-        ('Internship', 'Internship'),
-        ('Entry Level', 'Entry Level'),
-        ('Mid Level', 'Mid Level'),
-        ('Senior Level', 'Senior Level'),
-    ],blank=True,)
+    experience_level = models.CharField(choices=ExperienceLevelChoices,max_length=50,blank=True,)
     apply_email = models.EmailField(blank=True, null=True)
 
 

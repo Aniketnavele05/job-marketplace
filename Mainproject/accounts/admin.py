@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, TalentProfile, RecruiterProfile, Skill, JobTitle, Location, Experience, JobPreference ,JobContent
+from .models import CustomUser, TalentProfile, RecruiterProfile, Skill, JobRole, Location, Experience, JobPreference ,JobContent
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -10,7 +10,7 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(TalentProfile)
 admin.site.register(RecruiterProfile)
 admin.site.register(Skill)
-admin.site.register(JobTitle)
+admin.site.register(JobRole)
 admin.site.register(Location)
 admin.site.register(Experience)
 admin.site.register(JobPreference)
