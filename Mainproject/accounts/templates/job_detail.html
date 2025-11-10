@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Job Details</title>
+  <style>
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #f9f9f9);
+      margin: 0;
+      padding: 40px 15px;
+      color: #333;
+    }
+
+    .job-container {
+      background-color: #fff;
+      max-width: 850px;
+      margin: auto;
+      padding: 35px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .job-header {
+      text-align: center;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+
+    .job-header h1 {
+      font-size: 2rem;
+      color: #1a237e;
+      margin: 0;
+    }
+
+    .job-meta {
+      color: #555;
+      font-size: 1rem;
+      margin-top: 4px;
+    }
+
+    .job-section {
+      margin-bottom: 18px;
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .job-section strong {
+      color: #1a237e;
+    }
+
+    .skills {
+      margin-bottom: 25px;
+    }
+
+    .skills strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #1a237e;
+    }
+
+    #job-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .skills span {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      color: #0d47a1;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+    }
+
+    .skills span:hover {
+      background: #bbdefb;
+    }
+
+    .actions {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin: 0 8px;
+      color: white;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .btn-update { background-color: #1976d2; }
+    .btn-delete { background-color: #e53935; }
+    .btn-apply { background-color: #43a047; }
+
+    .btn-update:hover { background-color: #1565c0; }
+    .btn-delete:hover { background-color: #c62828; }
+    .btn-apply:hover { background-color: #2e7d32; }
+  </style>
+</head>
+<body>
+  <div class="job-container">
+    <div class="job-header">
+      <h1 id="job-title">Loading...</h1>
+      <div class="job-meta" id="job-company"></div>
+      <div class="job-meta" id="job-location"></div>
+      <div class="job-meta" id="job-type"></div>
+    </div>
+
+    <div class="job-section" id="job-description"></div>
+
+    <div class="job-section"><strong>Job Role:</strong> <span id="job-role"></span></div>
+    <div class="job-section"><strong>Experience Level:</strong> <span id="experience-level"></span></div>
+    <div class="job-section"><strong>Salary Range:</strong> <span id="salary-range"></span></div>
+    <div class="job-section"><strong>Currency:</strong> <span id="currency"></span></div>
+    <div class="job-section"><strong>Company Website:</strong> <a id="company-website" href="#" target="_blank"></a></div>
+    <div class="job-section"><strong>Posted On:</strong> <span id="creation-date"></span></div>
+
+    <div class="skills">
+      <strong>Skills Required:</strong>
+      <div id="job-skills"></div>
+    </div>
+
+    <div class="actions" id="action-buttons"></div>
+  </div>
+
+  <script>
+    const jobId = "{{ job_id }}";
+    const userType = "{{ user_type }}";
+    const apiUrl = `/api/jobs/${jobId}/`;
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(job => {
+        // Basic Info
+        document.getElementById("job-title").textContent = job.job_title || "Untitled";
+        document.getElementById("job-company").textContent = `🏢 ${job.job_company || 'N/A'}`;
+        document.getElementById("job-description").textContent = job.job_description || 'No description provided.';
+        document.getElementById("job-location").textContent = `📍 ${job.location?.name || 'N/A'}`;
+        document.getElementById("job-type").textContent = `🕒 ${job.job_type || 'N/A'}`;
+
+        // Job Role
+        const roles = (job.job_role || []).map(r => r.name).join(', ');
+        document.getElementById("job-role").textContent = roles || 'N/A';
+
+        // Experience Level
+        document.getElementById("experience-level").textContent = job.experience_level || 'Not specified';
+
+        // Salary Info
+        const salaryMin = job.salary_min ? parseFloat(job.salary_min).toLocaleString() : 'N/A';
+        const salaryMax = job.salary_max ? parseFloat(job.salary_max).toLocaleString() : 'N/A';
+        document.getElementById("salary-range").textContent = `${salaryMin} - ${salaryMax}`;
+        document.getElementById("currency").textContent = job.currency || 'N/A';
+
+        // Company Website
+        const companyWebsite = document.getElementById("company-website");
+        companyWebsite.textContent = job.job_company_website || 'N/A';
+        companyWebsite.href = job.job_company_website || "#";
+
+        // Creation Date
+        const date = new Date(job.creation_date);
+        document.getElementById("creation-date").textContent = date.toDateString();
+
+        // Skills
+        const skillContainer = document.getElementById("job-skills");
+        skillContainer.innerHTML = "";
+        (job.needed_skills || []).forEach(skill => {
+          const span = document.createElement("span");
+          span.textContent = skill.name;
+          skillContainer.appendChild(span);
+        });
+
+        // Action Buttons
+        const actionDiv = document.getElementById("action-buttons");
+        if (userType === "recruiter") {
+          actionDiv.innerHTML = `
+            <button class="btn btn-update" onclick="window.location.href='/update-job/${jobId}/'">Update</button>
+            <button class="btn btn-delete" onclick="deleteJob(${jobId})">Delete</button>
+          `;
+        } else if (userType === "talent") {
+          actionDiv.innerHTML = `<button class="btn btn-apply" onclick="applyJob(${jobId})">Apply</button>`;
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        document.querySelector('.job-container').innerHTML = `<p style="color:red;">Failed to load job details.</p>`;
+      });
+
+    function deleteJob(id) {
+      if (!confirm("Are you sure you want to delete this job?")) return;
+      fetch(`/api/jobs/${id}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+      }).then(res => {
+        if (res.ok) {
+          alert("Job deleted successfully");
+          window.location.href = '/dashboard/recruiter/';
+        } else {
+          alert("Error deleting job");
+        }
+      });
+    }
+
+    function applyJob(id) {
+      alert("✅ Application submitted successfully!");
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+</body>
+</html>

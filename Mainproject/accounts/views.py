@@ -9,7 +9,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.decorators import login_required
-from rest_framework.permissions import IsAuthenticated
+from .permissions import IsRecruiterOwner
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 # Talent Registration
 def TalentRegForm(request):
@@ -94,6 +95,17 @@ class JobContentView(viewsets.ModelViewSet):
         # Automatically assign recruiter
         recruiter = self.request.user.recruiter_profile
         serializer.save(recruiter=recruiter)
+    
+    from .permissions import IsRecruiterOwner
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsRecruiterOwner]
+        else:
+            permission_classes = [IsAuthenticatedOrReadOnly]
+        return [permission() for permission in permission_classes]
+
+
 
 # Choices
 class JobChoices(APIView):
@@ -116,3 +128,13 @@ class LocationView(viewsets.ReadOnlyModelViewSet):
 class JobRoleView(viewsets.ReadOnlyModelViewSet):
     queryset = JobRole.objects.all()
     serializer_class = JobRoleSerializer
+
+
+@login_required(login_url='/login/')
+def job_detail_page(request, id):
+    user_type = request.user.user_type  # 'recruiter' or 'talent'
+    context = {
+        'job_id': id,
+        'user_type': user_type,
+    }
+    return render(request, 'job_detail.html', context)

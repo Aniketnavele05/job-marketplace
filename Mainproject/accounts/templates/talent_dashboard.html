@@ -207,26 +207,28 @@
 
       jobs.forEach(job => {
         const jobCard = document.createElement("div");
-        jobCard.classList.add("job-card");
-        jobCard.innerHTML = `
-          <h2 class="job-title">${job.job_title || "Untitled Role"}</h2>
-          <div class="company">${job.job_company || "Unknown Company"}</div>
+jobCard.classList.add("job-card");
 
-          <div class="details">
-            <strong>Type:</strong> ${job.job_type || "N/A"}<br/>
-            <strong>Experience:</strong> ${job.experience_level || "N/A"}<br/>
-            <strong>Roles:</strong> ${Array.isArray(job.job_role) ? job.job_role.map(r => r.name).join(", ") : "N/A"}<br/>
-            <strong>Skills:</strong> ${Array.isArray(job.needed_skills) ? job.needed_skills.map(s => s.name).join(", ") : "N/A"}<br/>
-          </div>
+// 👇 Add click event to open job details
+jobCard.onclick = function() {
+  window.location.href = `/job/${job.id}/`;  // Redirect to job detail page
+};
 
-          <div class="salary">
-            ₹${parseInt(job.salary_min) || 0} - ₹${parseInt(job.salary_max) || 0} ${job.currency || ""}
-          </div>
+jobCard.innerHTML = `
+  <h2 class="job-title">${job.job_title || "Untitled Role"}</h2>
+  <div class="company">${job.job_company || "Unknown Company"}</div>
 
-          <a href="${job.job_company_website || '#'}" class="apply-btn" target="_blank">
-            Visit Company
-          </a>
-        `;
+  <div class="details">
+    <strong>Type:</strong> ${job.job_type || "N/A"}<br/>
+    <strong>Experience:</strong> ${job.experience_level || "N/A"}<br/>
+    <strong>Roles:</strong> ${Array.isArray(job.job_role) ? job.job_role.map(r => r.name).join(", ") : "N/A"}<br/>
+    <strong>Skills:</strong> ${Array.isArray(job.needed_skills) ? job.needed_skills.map(s => s.name).join(", ") : "N/A"}<br/>
+  </div>
+
+  <div class="salary">
+    ₹${parseInt(job.salary_min) || 0} - ₹${parseInt(job.salary_max) || 0} ${job.currency || ""}
+  </div>
+`;
 
         container.appendChild(jobCard);
       });
