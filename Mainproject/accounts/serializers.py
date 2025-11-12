@@ -30,3 +30,16 @@ class JobContentSerializer(serializers.ModelSerializer):
         model = JobContent
         fields = '__all__'
         read_only_fields = ['recruiter', 'job_company', 'job_company_website']
+
+class JobUpdateSerializer(serializers.ModelSerializer):
+    job_role = serializers.PrimaryKeyRelatedField(queryset = JobRole.objects.all(),many=True)
+    needed_skills = serializers.PrimaryKeyRelatedField(queryset = Skill.objects.all(),many = True)
+    location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
+
+    class Meta:
+        model = JobContent
+        fields = [
+            'job_title','job_role','needed_skills','job_type','location',
+            'salary_min','salary_max','currency','benefits',
+            'job_description','experience_level','apply_email','is_active'
+        ]

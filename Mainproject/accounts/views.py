@@ -1,31 +1,54 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
-from .forms import TalentRegistrationForm, RecruiterRegistrationForm
-from .models import JobContent , TalentProfile , RecruiterProfile , Skill , Location , JobRole
-from rest_framework import viewsets , permissions , generics
-from .serializers import JobContentSerializer , SkillsSerializer , JobRoleSerializer , LocationSerializer
+from django.contrib.auth.decorators import login_required
+
+from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from django.contrib.auth.decorators import login_required
-from .permissions import IsRecruiterOwner
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 
-# Talent Registration
+from .forms import TalentRegistrationForm, RecruiterRegistrationForm
+from .models import (
+    JobContent,
+    TalentProfile,
+    RecruiterProfile,
+    Skill,
+    Location,
+    JobRole,
+)
+from .serializers import (
+    JobContentSerializer,
+    JobUpdateSerializer,
+    SkillsSerializer,
+    JobRoleSerializer,
+    LocationSerializer,
+)
+from .permissions import IsRecruiterOwner
+
+
+# ------------------------------------------
+# 🔹 AUTHENTICATION VIEWS
+# ------------------------------------------
 def TalentRegForm(request):
+    """Handle Talent Registration"""
     if request.method == 'POST':
         form = TalentRegistrationForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Talent account created successfully! Please login.")
-            return redirect( 'login')
+            return redirect('login')
     else:
         form = TalentRegistrationForm()
     return render(request, 'register_talent.html', {'form': form})
 
-# Recruiter Registration
+
 def RecruiterRegForm(request):
+    """Handle Recruiter Registration"""
     if request.method == 'POST':
         form = RecruiterRegistrationForm(request.POST)
         if form.is_valid():
@@ -36,18 +59,18 @@ def RecruiterRegForm(request):
         form = RecruiterRegistrationForm()
     return render(request, 'register_recruiter.html', {'form': form})
 
-# Login
+
 def login_view(request):
+    """User Login (supports username or email login)"""
     if request.method == 'POST':
-        username_or_email = request.POST.get('username')  # you can accept username or email later
+        username_or_email = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Attempt authenticate with username first
+        # Try login by username
         user = authenticate(request, username=username_or_email, password=password)
 
-        # If using email as login, try to fetch user by email and authenticate (optional)
+        # Try login by email if username fails
         if user is None:
-            # try email-based auth (only if you want email logins)
             from .models import CustomUser
             try:
                 u = CustomUser.objects.get(email=username_or_email)
@@ -61,42 +84,49 @@ def login_view(request):
                 return redirect('talent_dashboard')
             elif user.user_type == 'recruiter':
                 return redirect('recruiter_dashboard')
-            else:
-                return redirect('home')  # fallback
+            return redirect('home')
         else:
             messages.error(request, "Invalid username/email or password.")
     return render(request, 'login.html')
 
-# Dashboards (simple placeholders)
+
+# ------------------------------------------
+# 🔹 DASHBOARD VIEWS
+# ------------------------------------------
+@login_required(login_url='/login/')
 def talent_dashboard(request):
     return render(request, 'talent_dashboard.html')
+
 
 @login_required(login_url='/login/')
 def recruiter_dashboard(request):
     return render(request, 'recruiter_dashboard.html')
 
 
-# Job content view
+# ------------------------------------------
+# 🔹 JOB CONTENT API (CRUD)
+# ------------------------------------------
 class JobContentView(viewsets.ModelViewSet):
+    """Manage Job Posts (Create/Update/Delete/View)"""
     serializer_class = JobContentSerializer
-    permission_classes = [IsAuthenticated]  # Only logged-in users
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        # Recruiter sees only their own jobs
         if hasattr(user, 'recruiter_profile'):
             return JobContent.objects.filter(recruiter=user.recruiter_profile)
-        # Talent sees only active jobs
         elif hasattr(user, 'talent_profile'):
             return JobContent.objects.filter(is_active=True)
         return JobContent.objects.none()
 
+    def get_serializer_class(self):
+        if self.action in ['update', 'partial_update']:
+            return JobUpdateSerializer
+        return JobContentSerializer
+
     def perform_create(self, serializer):
-        # Automatically assign recruiter
         recruiter = self.request.user.recruiter_profile
         serializer.save(recruiter=recruiter)
-    
-    from .permissions import IsRecruiterOwner
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
@@ -106,33 +136,45 @@ class JobContentView(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-
-# Choices
+# ------------------------------------------
+# 🔹 STATIC CHOICES (for dropdowns)
+# ------------------------------------------
 class JobChoices(APIView):
+    """Expose job-related choice fields"""
     permission_classes = [AllowAny]
-    def get(self ,request):
+
+    def get(self, request):
         return Response({
             "job_type_choices": JobContent.JobType,
             "experience_level_choices": JobContent.ExperienceLevelChoices,
         })
 
-# skills
+
+# ------------------------------------------
+# 🔹 STATIC DATASETS (Skills, Locations, Roles)
+# ------------------------------------------
 class SkillsView(viewsets.ReadOnlyModelViewSet):
     queryset = Skill.objects.all()
     serializer_class = SkillsSerializer
 
+
 class LocationView(viewsets.ReadOnlyModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
+
 
 class JobRoleView(viewsets.ReadOnlyModelViewSet):
     queryset = JobRole.objects.all()
     serializer_class = JobRoleSerializer
 
 
+# ------------------------------------------
+# 🔹 JOB DETAIL PAGE (Frontend Render)
+# ------------------------------------------
 @login_required(login_url='/login/')
 def job_detail_page(request, id):
-    user_type = request.user.user_type  # 'recruiter' or 'talent'
+    """Render single job detail page"""
+    user_type = request.user.user_type
     context = {
         'job_id': id,
         'user_type': user_type,

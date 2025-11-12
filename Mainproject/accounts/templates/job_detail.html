@@ -27,94 +27,67 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .job-header {
-      text-align: center;
-      border-bottom: 2px solid #f0f0f0;
-      padding-bottom: 15px;
-      margin-bottom: 25px;
-    }
+    .job-header { text-align: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 25px; }
+    .job-header h1 { font-size: 2rem; color: #1a237e; margin: 0; }
+    .job-meta { color: #555; font-size: 1rem; margin-top: 4px; }
 
-    .job-header h1 {
-      font-size: 2rem;
-      color: #1a237e;
-      margin: 0;
-    }
+    .job-section { margin-bottom: 18px; line-height: 1.6; font-size: 1rem; }
+    .job-section strong { color: #1a237e; }
 
-    .job-meta {
-      color: #555;
-      font-size: 1rem;
-      margin-top: 4px;
-    }
+    .skills { margin-bottom: 25px; }
+    .skills strong { display: block; margin-bottom: 8px; color: #1a237e; }
 
-    .job-section {
-      margin-bottom: 18px;
-      line-height: 1.6;
-      font-size: 1rem;
-    }
+    #job-skills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skills span { background: #e3f2fd; border: 1px solid #90caf9; color: #0d47a1; border-radius: 8px; padding: 6px 12px; font-size: 0.9rem; transition: background 0.3s; }
+    .skills span:hover { background: #bbdefb; }
 
-    .job-section strong {
-      color: #1a237e;
-    }
-
-    .skills {
-      margin-bottom: 25px;
-    }
-
-    .skills strong {
-      display: block;
-      margin-bottom: 8px;
-      color: #1a237e;
-    }
-
-    #job-skills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .skills span {
-      background: #e3f2fd;
-      border: 1px solid #90caf9;
-      color: #0d47a1;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 0.9rem;
-      transition: background 0.3s;
-    }
-
-    .skills span:hover {
-      background: #bbdefb;
-    }
-
-    .actions {
-      text-align: center;
-      margin-top: 30px;
-    }
-
+    .actions { text-align: center; margin-top: 30px; }
     .btn {
-      display: inline-block;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.95rem;
-      margin: 0 8px;
-      color: white;
+      display: inline-block; padding: 10px 18px; border: none; border-radius: 8px;
+      cursor: pointer; font-weight: 600; font-size: 0.95rem; margin: 0 8px; color: white;
       transition: transform 0.2s, background-color 0.3s;
     }
-
-    .btn:hover {
-      transform: scale(1.05);
-    }
-
+    .btn:hover { transform: scale(1.05); }
     .btn-update { background-color: #1976d2; }
     .btn-delete { background-color: #e53935; }
     .btn-apply { background-color: #43a047; }
-
     .btn-update:hover { background-color: #1565c0; }
     .btn-delete:hover { background-color: #c62828; }
     .btn-apply:hover { background-color: #2e7d32; }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background: white;
+      margin: 8% auto;
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 500px;
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    form input, form textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .btn-submit { background-color: #1976d2; color: #fff; }
+    .btn-submit:hover { background-color: #1565c0; }
   </style>
 </head>
 <body>
@@ -143,44 +116,53 @@
     <div class="actions" id="action-buttons"></div>
   </div>
 
+  <!-- Modal for update -->
+  <div id="updateModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Update Job</h2>
+      <form id="updateJobForm">
+        <label>Job Title:</label>
+        <input type="text" id="update-title" required>
+
+        <label>Description:</label>
+        <textarea id="update-description" required></textarea>
+
+        <label>Salary Min:</label>
+        <input type="number" id="update-salary-min" required>
+
+        <label>Salary Max:</label>
+        <input type="number" id="update-salary-max" required>
+
+        <button type="submit" class="btn btn-submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     const jobId = "{{ job_id }}";
     const userType = "{{ user_type }}";
     const apiUrl = `/api/jobs/${jobId}/`;
 
+    // Load job details
     fetch(apiUrl)
       .then(res => res.json())
       .then(job => {
-        // Basic Info
         document.getElementById("job-title").textContent = job.job_title || "Untitled";
         document.getElementById("job-company").textContent = `🏢 ${job.job_company || 'N/A'}`;
         document.getElementById("job-description").textContent = job.job_description || 'No description provided.';
         document.getElementById("job-location").textContent = `📍 ${job.location?.name || 'N/A'}`;
         document.getElementById("job-type").textContent = `🕒 ${job.job_type || 'N/A'}`;
-
-        // Job Role
-        const roles = (job.job_role || []).map(r => r.name).join(', ');
-        document.getElementById("job-role").textContent = roles || 'N/A';
-
-        // Experience Level
+        document.getElementById("job-role").textContent = (job.job_role || []).map(r => r.name).join(', ') || 'N/A';
         document.getElementById("experience-level").textContent = job.experience_level || 'Not specified';
-
-        // Salary Info
-        const salaryMin = job.salary_min ? parseFloat(job.salary_min).toLocaleString() : 'N/A';
-        const salaryMax = job.salary_max ? parseFloat(job.salary_max).toLocaleString() : 'N/A';
-        document.getElementById("salary-range").textContent = `${salaryMin} - ${salaryMax}`;
+        document.getElementById("salary-range").textContent = `${job.salary_min} - ${job.salary_max}`;
         document.getElementById("currency").textContent = job.currency || 'N/A';
-
-        // Company Website
         const companyWebsite = document.getElementById("company-website");
         companyWebsite.textContent = job.job_company_website || 'N/A';
         companyWebsite.href = job.job_company_website || "#";
-
-        // Creation Date
         const date = new Date(job.creation_date);
         document.getElementById("creation-date").textContent = date.toDateString();
 
-        // Skills
         const skillContainer = document.getElementById("job-skills");
         skillContainer.innerHTML = "";
         (job.needed_skills || []).forEach(skill => {
@@ -189,21 +171,58 @@
           skillContainer.appendChild(span);
         });
 
-        // Action Buttons
         const actionDiv = document.getElementById("action-buttons");
         if (userType === "recruiter") {
           actionDiv.innerHTML = `
-            <button class="btn btn-update" onclick="window.location.href='/update-job/${jobId}/'">Update</button>
+            <button class="btn btn-update" onclick="openModal(${jobId})">Update</button>
             <button class="btn btn-delete" onclick="deleteJob(${jobId})">Delete</button>
           `;
+          // Pre-fill update form
+          document.getElementById("update-title").value = job.job_title;
+          document.getElementById("update-description").value = job.job_description;
+          document.getElementById("update-salary-min").value = job.salary_min;
+          document.getElementById("update-salary-max").value = job.salary_max;
         } else if (userType === "talent") {
           actionDiv.innerHTML = `<button class="btn btn-apply" onclick="applyJob(${jobId})">Apply</button>`;
         }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        document.querySelector('.job-container').innerHTML = `<p style="color:red;">Failed to load job details.</p>`;
       });
+
+    // Open and close modal
+    function openModal() {
+      document.getElementById("updateModal").style.display = "block";
+    }
+    function closeModal() {
+      document.getElementById("updateModal").style.display = "none";
+    }
+
+    // Update job via PUT request
+    document.getElementById("updateJobForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const data = {
+        job_title: document.getElementById("update-title").value,
+        job_description: document.getElementById("update-description").value,
+        salary_min: document.getElementById("update-salary-min").value,
+        salary_max: document.getElementById("update-salary-max").value,
+      };
+
+      fetch(apiUrl, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(data),
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("✅ Job updated successfully!");
+          closeModal();
+          location.reload();
+        } else {
+          alert("❌ Failed to update job.");
+        }
+      });
+    });
 
     function deleteJob(id) {
       if (!confirm("Are you sure you want to delete this job?")) return;
