@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-from rest_framework import viewsets
+from rest_framework import viewsets, generics, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import (
@@ -20,6 +20,7 @@ from .models import (
     Skill,
     Location,
     JobRole,
+    JobType,
 )
 from .serializers import (
     JobContentSerializer,
@@ -27,6 +28,7 @@ from .serializers import (
     SkillsSerializer,
     JobRoleSerializer,
     LocationSerializer,
+    JobTypeSerializer,
 )
 from .permissions import IsRecruiterOwner
 
@@ -153,20 +155,29 @@ class JobChoices(APIView):
 # ------------------------------------------
 # 🔹 STATIC DATASETS (Skills, Locations, Roles)
 # ------------------------------------------
-class SkillsView(viewsets.ReadOnlyModelViewSet):
+class SkillsView(generics.ListAPIView):
     queryset = Skill.objects.all()
     serializer_class = SkillsSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
 
-class LocationView(viewsets.ReadOnlyModelViewSet):
+class LocationView(generics.ListAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
 
-class JobRoleView(viewsets.ReadOnlyModelViewSet):
+class JobRoleView(generics.ListAPIView):
     queryset = JobRole.objects.all()
     serializer_class = JobRoleSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
+class JobtypeView(generics.ListAPIView):
+    queryset = JobType.objects.all()
+    serializer_class = JobTypeSerializer
 
 # ------------------------------------------
 # 🔹 JOB DETAIL PAGE (Frontend Render)
