@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import FileExtensionValidator
-
+from django.db.models import JSONField
+from phonenumber_field.modelfields import PhoneNumberField
 # -------------------------
 # Custom User
 # -------------------------
@@ -56,6 +57,16 @@ class JobType(models.Model):
 # -------------------------
 class TalentProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='talent_profile')
+    profile_picture = models.ImageField(upload_to='talent_profile_pic/',
+        null=True, 
+        blank=True, 
+        validators=[FileExtensionValidator(['jpeg','jpg','webp'])]
+    )
+    about = models.TextField(default="")
+    gender = models.CharField(max_length=20, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True)
+    social = models.JSONField(default=dict,blank=True,null=True)
+    open_to_work = models.BooleanField(default=False)
     dob = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=50, blank=True)
     skills = models.ManyToManyField(Skill, blank=True, related_name='talents')

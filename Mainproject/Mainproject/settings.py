@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts.apps.AccountsConfig",
     "rest_framework",
+    "phonenumber_field"
 ]
 
 # Custom User model
@@ -132,3 +133,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login_view"
 LOGIN_REDIRECT_URL = "talent_dashboard"
 LOGOUT_REDIRECT_URL = "login_view"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':{
+        'rest_framework_simplejwt.authentication.JWTAthentication',
+    }
+}

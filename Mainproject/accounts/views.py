@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-
-from rest_framework import viewsets, generics, filters
+from django.views import View
+from rest_framework import viewsets, generics, filters, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
@@ -29,76 +30,47 @@ from .serializers import (
     JobRoleSerializer,
     LocationSerializer,
     JobTypeSerializer,
+    RegSerializer
 )
 from .permissions import IsRecruiterOwner
 
 
+class IndexView(View):
+    def get(self, request):
+        return render(request, 'index.html')
+    
 # ------------------------------------------
 # 🔹 AUTHENTICATION VIEWS
 # ------------------------------------------
-def TalentRegForm(request):
-    """Handle Talent Registration"""
-    if request.method == 'POST':
-        form = TalentRegistrationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Talent account created successfully! Please login.")
-            return redirect('login')
-    else:
-        form = TalentRegistrationForm()
-    return render(request, 'register_talent.html', {'form': form})
+class registrationView(APIView):
+    authentication_classes = []
+    permission_classes = []
 
-
-def RecruiterRegForm(request):
-    """Handle Recruiter Registration"""
-    if request.method == 'POST':
-        form = RecruiterRegistrationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Recruiter account created successfully! Please login.")
-            return redirect('login')
-    else:
-        form = RecruiterRegistrationForm()
-    return render(request, 'register_recruiter.html', {'form': form})
-
-
-def login_view(request):
-    """User Login (supports username or email login)"""
-    if request.method == 'POST':
-        username_or_email = request.POST.get('username')
-        password = request.POST.get('password')
-
-        # Try login by username
-        user = authenticate(request, username=username_or_email, password=password)
-
-        # Try login by email if username fails
-        if user is None:
-            from .models import CustomUser
-            try:
-                u = CustomUser.objects.get(email=username_or_email)
-                user = authenticate(request, username=u.username, password=password)
-            except CustomUser.DoesNotExist:
-                user = None
-
-        if user is not None:
-            login(request, user)
-            if user.user_type == 'talent':
-                return redirect('talent_dashboard')
-            elif user.user_type == 'recruiter':
-                return redirect('recruiter_dashboard')
-            return redirect('home')
+    def post(self,request):
+        serialzer  = RegSerializer(data=request.data)
+        if serialzer.is_valid():
+            serialzer.save()
+            return Response({'message':"user create"})
         else:
-            messages.error(request, "Invalid username/email or password.")
-    return render(request, 'login.html')
+            return Response(serialzer.errors)
 
 
+class UserInfoView(APIView):
+    permission_classes = [IsAuthenticated]  # Only accessible with JWT
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        return Response({
+            "username": request.user.username,
+            "user_type": request.user.user_type
+        })
+    
 # ------------------------------------------
 # 🔹 DASHBOARD VIEWS
 # ------------------------------------------
-@login_required(login_url='/login/')
+@login_required(login_url='/')
 def talent_dashboard(request):
     return render(request, 'talent_dashboard.html')
-
 
 @login_required(login_url='/login/')
 def recruiter_dashboard(request):
@@ -109,7 +81,6 @@ def recruiter_dashboard(request):
 # 🔹 JOB CONTENT API (CRUD)
 # ------------------------------------------
 class JobContentView(viewsets.ModelViewSet):
-    """Manage Job Posts (Create/Update/Delete/View)"""
     serializer_class = JobContentSerializer
     permission_classes = [IsAuthenticated]
 
@@ -127,15 +98,37 @@ class JobContentView(viewsets.ModelViewSet):
         return JobContentSerializer
 
     def perform_create(self, serializer):
+        """Create job with recruiter and set foreign keys/many-to-many fields"""
         recruiter = self.request.user.recruiter_profile
-        serializer.save(recruiter=recruiter)
+        job = serializer.save(recruiter=recruiter)
 
-    def get_permissions(self):
-        if self.action in ['update', 'partial_update', 'destroy']:
-            permission_classes = [IsAuthenticated, IsRecruiterOwner]
-        else:
-            permission_classes = [IsAuthenticatedOrReadOnly]
-        return [permission() for permission in permission_classes]
+        # Handle Many-to-Many fields
+        needed_skills_ids = self.request.data.get("needed_skills", [])
+        if needed_skills_ids:
+            skills = Skill.objects.filter(id__in=needed_skills_ids)
+            job.needed_skills.set(skills)
+
+        job_role_ids = self.request.data.get("job_role", [])
+        if job_role_ids:
+            roles = JobRole.objects.filter(id__in=job_role_ids)
+            job.job_role.set(roles)
+
+        # Handle ForeignKey fields
+        location_id = self.request.data.get("location")
+        if location_id:
+            try:
+                job.location = Location.objects.get(id=location_id)
+            except Location.DoesNotExist:
+                pass
+
+        job_type_id = self.request.data.get("job_type")
+        if job_type_id:
+            try:
+                job.job_type = JobType.objects.get(id=job_type_id)
+            except JobType.DoesNotExist:
+                pass
+
+        job.save()
 
 
 # ------------------------------------------

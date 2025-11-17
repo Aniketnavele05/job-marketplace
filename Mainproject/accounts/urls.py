@@ -1,4 +1,5 @@
 from django.urls import path, include
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.routers import DefaultRouter
 from . import views
 from .views import (
@@ -7,7 +8,10 @@ from .views import (
     JobChoices,
     SkillsView,
     LocationView,
-    JobRoleView
+    JobRoleView,
+    IndexView,
+    registrationView,
+    UserInfoView
 )
 
 # Router for Job CRUD (Create/Read/Update/Delete)
@@ -22,11 +26,12 @@ urlpatterns = [
     path('api/skills/', SkillsView.as_view(), name='skills'),
     path('api/jobroles/', JobRoleView.as_view(), name='jobroles'),
     path('api/locations/', LocationView.as_view(), name='locations'),
-
+    path("api/login/", TokenObtainPairView.as_view(), name="jwt_login"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="jwt_refresh"),
     # --- Web Routes ---
-    path('registration/talent/', views.TalentRegForm, name='register_talent'),
-    path('registration/recruiter/', views.RecruiterRegForm, name='register_recruiter'),
-    path('login/', views.login_view, name='login'),
+    path('',IndexView.as_view(),name='home'),
+    path('api/register/', registrationView.as_view(), name='api_register'),
+    path('api/user-info/', views.UserInfoView.as_view(), name='user_info'),
     path('dashboard/talent/', views.talent_dashboard, name='talent_dashboard'),
     path('dashboard/recruiter/', views.recruiter_dashboard, name='recruiter_dashboard'),
     path('job/<int:id>/', views.job_detail_page, name='job_detail'),

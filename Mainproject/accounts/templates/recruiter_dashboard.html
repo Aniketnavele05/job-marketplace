@@ -5,255 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recruiter Dashboard</title>
 
-  <!-- 🌈 Fonts & Libraries -->
+  <!-- Select2 & jQuery -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-  <!-- 💅 Styles -->
   <style>
-    body {
-      margin: 0;
-      font-family: "Poppins", sans-serif;
-      background-color: #f8f9fa;
-      color: #333;
-    }
-
-    /* 🌟 Navbar */
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #fff;
-      padding: 14px 28px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .navbar .logo {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #dc3545;
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .nav-links a {
-      text-decoration: none;
-      font-weight: 500;
-      padding: 8px 16px;
-      border-radius: 20px;
-      transition: 0.3s ease;
-    }
-    .nav-links a.chat {
-      background-color: #dc3545;
-      color: #fff;
-      box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
-    }
-    .nav-links a.chat:hover {
-      background-color: #b02a37;
-    }
-    .nav-links a.profile {
-      color: #333;
-      border: 1px solid #ccc;
-      background-color: #fff;
-    }
-    .nav-links a.profile:hover {
-      background-color: #e9ecef;
-    }
-    .nav-links a.logout {
-      color: #dc3545;
-      border: 1px solid #dc3545;
-      background-color: #fff;
-    }
-    .nav-links a.logout:hover {
-      background-color: #dc3545;
-      color: white;
-    }
-
-    /* 🏠 Hero Section */
-    .hero {
-      padding: 60px 20px;
-      text-align: center;
-      background: #dc3545;
-      color: white;
-    }
-    .hero h1 {
-      font-size: 1.8rem;
-      margin-bottom: 10px;
-    }
-    .hero p {
-      font-size: 1.1rem;
-    }
-
-    /* 💼 Job Cards */
-    .job-card {
-      background-color: #fff;
-      margin: 20px auto;
-      padding: 20px;
-      width: 80%;
-      max-width: 700px;
-      border-radius: 12px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer;
-    }
-    .job-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-    }
-    .job-title {
-      font-size: 1.3rem;
-      color: #dc3545;
-      margin-bottom: 8px;
-    }
-    .company {
-      color: #555;
-      margin-bottom: 12px;
-      font-weight: 500;
-    }
-    .details {
-      color: #666;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      margin-bottom: 10px;
-    }
-    .salary {
-      font-weight: bold;
-      color: #dc3545;
-      margin-bottom: 14px;
-    }
-
-    /* 🧭 Buttons */
-    .apply-btn {
-      background-color: #dc3545;
-      color: #fff;
-      text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      transition: background 0.3s;
-    }
-    .apply-btn:hover {
-      background-color: #b02a37;
-    }
-    .delete-btn {
-      margin-left: 10px;
-      background-color: #fff;
-      color: #dc3545;
-      border: 1px solid #dc3545;
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .delete-btn:hover {
-      background-color: #dc3545;
-      color: #fff;
-    }
-
-    /* ➕ Floating Add Button */
-    .add-job-btn {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 10px 15px;
-      font-size: 20px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
-      transition: all 0.3s ease;
-    }
-    .add-job-btn:hover {
-      background-color: #b02a37;
-    }
-
-    /* 📝 Job Form Modal */
-    .job-form-container {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-      z-index: 1001;
-      width: 90%;
-      max-width: 600px;
-      overflow-y: auto;
-      max-height: 90vh;
-    }
-    .job-form-container h2 {
-      text-align: center;
-      color: #dc3545;
-      margin-bottom: 20px;
-    }
-    .job-form-container label {
-      display: block;
-      font-weight: 600;
-      margin-top: 12px;
-      margin-bottom: 6px;
-      color: #333;
-    }
-    .job-form-container input,
-    .job-form-container select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      margin-bottom: 12px;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-    .job-form-container input:focus,
-    .job-form-container select:focus {
-      border-color: #dc3545;
-      box-shadow: 0 0 6px rgba(220, 53, 69, 0.3);
-      outline: none;
-    }
-    select[multiple] {
-      min-height: 120px;
-    }
-    .job-form-container button[type="submit"],
-    .cancel-btn {
-      border-radius: 25px;
-      padding: 10px 20px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 10px;
-    }
-    .job-form-container button[type="submit"] {
-      background-color: #dc3545;
-      color: #fff;
-      border: none;
-    }
-    .job-form-container button[type="submit"]:hover {
-      background-color: #b02a37;
-    }
-    .cancel-btn {
-      background-color: #ccc;
-      color: #333;
-      border: none;
-      margin-left: 10px;
-    }
-    .cancel-btn:hover {
-      background-color: #999;
-    }
+    body { margin:0; font-family: "Poppins", sans-serif; background:#f8f9fa; color:#333; }
+    .navbar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:14px 28px; box-shadow:0 2px 6px rgba(0,0,0,0.08); position:sticky; top:0; z-index:1000; }
+    .navbar .logo { font-size:1.4rem; font-weight:bold; color:#dc3545; }
+    .nav-links { display:flex; gap:16px; }
+    .nav-links a { text-decoration:none; padding:8px 16px; border-radius:20px; font-weight:500; transition:.3s; }
+    .chat { background:#dc3545; color:#fff; box-shadow:0 2px 5px rgba(220,53,69,0.3); }
+    .chat:hover { background:#b02a37; }
+    .profile { color:#333; border:1px solid #ccc; background:#fff; }
+    .profile:hover { background:#e9ecef; }
+    .logout { color:#dc3545; border:1px solid #dc3545; background:#fff; }
+    .logout:hover { background:#dc3545; color:#fff; }
+    .hero { text-align:center; padding:60px 20px; background:#dc3545; color:#fff; }
+    .hero h1 { font-size:1.8rem; margin-bottom:10px; }
+    .hero p { font-size:1.1rem; }
+    .job-card { background:#fff; margin:20px auto; padding:20px; max-width:700px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); cursor:pointer; transition:.2s; }
+    .job-card:hover { transform:translateY(-4px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
+    .job-title { color:#dc3545; font-size:1.3rem; margin-bottom:8px; }
+    .company { font-weight:500; color:#555; margin-bottom:12px; }
+    .details { color:#666; font-size:.95rem; line-height:1.5; margin-bottom:10px; }
+    .salary { font-weight:bold; color:#dc3545; margin-bottom:14px; }
+    .apply-btn { background:#dc3545; color:#fff; padding:8px 16px; border-radius:20px; text-decoration:none; transition:.3s; }
+    .apply-btn:hover { background:#b02a37; }
+    .delete-btn { margin-left:10px; background:#fff; color:#dc3545; border:1px solid #dc3545; padding:6px 12px; border-radius:8px; cursor:pointer; transition:.2s; }
+    .delete-btn:hover { background:#dc3545; color:#fff; }
+    .add-job-btn { position:fixed; bottom:30px; right:30px; background:#dc3545; color:#fff; border:none; border-radius:50px; padding:10px 15px; font-size:20px; font-weight:800; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.2); z-index:1000; transition:.3s; }
+    .add-job-btn:hover { background:#b02a37; }
+    .job-form-container { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:30px 40px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15); z-index:1001; width:90%; max-width:600px; overflow-y:auto; max-height:90vh; }
+    .job-form-container h2 { text-align:center; color:#dc3545; margin-bottom:20px; }
+    .job-form-container label { display:block; font-weight:600; margin-top:12px; margin-bottom:6px; color:#333; }
+    .job-form-container input, .job-form-container select { width:100%; padding:10px 12px; border:1px solid #ccc; border-radius:8px; font-size:.95rem; margin-bottom:12px; transition:.3s; }
+    .job-form-container input:focus, .job-form-container select:focus { border-color:#dc3545; box-shadow:0 0 6px rgba(220,53,69,.3); outline:none; }
+    select[multiple] { min-height:120px; }
+    .job-form-container button[type="submit"], .cancel-btn { border-radius:25px; padding:10px 20px; font-weight:700; cursor:pointer; margin-top:10px; transition:.3s; }
+    .job-form-container button[type="submit"] { background:#dc3545; color:#fff; border:none; }
+    .job-form-container button[type="submit"]:hover { background:#b02a37; }
+    .cancel-btn { background:#ccc; color:#333; border:none; margin-left:10px; }
+    .cancel-btn:hover { background:#999; }
   </style>
 </head>
 <body>
-  <!-- 🧭 Navbar -->
   <nav class="navbar">
     <div class="logo">Founditt.</div>
     <div class="nav-links">
@@ -263,239 +61,167 @@
     </div>
   </nav>
 
-  <!-- 🏠 Hero Section -->
   <section class="hero">
     <h1>Welcome, Recruiter!</h1>
     <p>Manage your job postings, applications, and chat with talents here.</p>
   </section>
 
-  <!-- 💼 Job List -->
   <div id="job-list"></div>
 
-  <!-- ➕ Add Job Button -->
   <button class="add-job-btn" onclick="toggleForm()">＋</button>
 
-  <!-- 📝 Job Form Modal -->
   <div class="job-form-container" id="jobFormContainer">
     <h2>Add New Job</h2>
     <form id="jobForm" onsubmit="addJob(event)">
       <label for="job_title">Job Title</label>
       <input type="text" id="job_title" required>
-
+      
       <label for="job_description">Job Description</label>
       <input type="text" id="job_description" required>
-
+      
       <label for="skillSelect">Select Required Skills</label>
       <select id="skillSelect" multiple required></select>
-
+      
       <label for="roleSelect">Select Job Roles</label>
       <select id="roleSelect" multiple required></select>
-
+      
       <label for="locationSelect">Select Job Location</label>
       <select id="locationSelect" required></select>
-
+      
       <label for="job_type">Select Job Type</label>
       <select id="job_type" required></select>
-
+      
       <label for="salary_min">Minimum Salary</label>
       <input type="number" id="salary_min" required>
-
+      
       <label for="salary_max">Maximum Salary</label>
       <input type="number" id="salary_max" required>
-
-      <label for="experience_level">Select Experience Level</label>
+      
+      <label for="experience_level">Experience Level</label>
       <select id="experience_level" required>
-        <option value="">Select Experience</option>
-        <option value="Fresher">Fresher</option>
-        <option value="Mid-Level">Mid-Level</option>
-        <option value="Senior">Senior</option>
+          <option value="">Select Experience</option>
+          <option value="Internship">Internship</option>
+          <option value="Entry Level">Entry Level</option>
+          <option value="Mid Level">Mid Level</option>
+          <option value="Senior Level">Senior Level</option>
       </select>
 
+      
       <label for="apply_email">Apply Email</label>
       <input type="email" id="apply_email" required>
-
-      <div style="margin-top:15px;">
+      
+      <div>
         <button type="submit">Post Job</button>
         <button type="button" class="cancel-btn" onclick="toggleForm()">Cancel</button>
       </div>
     </form>
   </div>
+<script>
+  axios.defaults.withCredentials = true;
+  const getCookie = name => document.cookie.split('; ').find(c => c.startsWith(name+'='))?.split('=')[1];
+  axios.defaults.headers.post['X-CSRFToken'] = getCookie('csrftoken');
 
-  <!-- ⚙️ Script -->
-  <script>
-    axios.defaults.withCredentials = true;
+  document.addEventListener("DOMContentLoaded", () => {
+    const jobFormContainer = document.getElementById("jobFormContainer");
+    window.toggleForm = () => jobFormContainer.style.display = jobFormContainer.style.display === "block" ? "none" : "block";
 
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        document.cookie.split(';').forEach(cookie => {
-          cookie = cookie.trim();
-          if (cookie.startsWith(name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          }
-        });
-      }
-      return cookieValue;
-    }
-    axios.defaults.headers.post['X-CSRFToken'] = getCookie('csrftoken');
-
-    document.addEventListener("DOMContentLoaded", () => {
-      window.toggleForm = () => {
-        const form = document.getElementById("jobFormContainer");
-        form.style.display = form.style.display === "block" ? "none" : "block";
-      };
-
-      // ⚡ Initialize Skill Select2
-      $('#skillSelect').select2({
+    const initSelect2 = (selector, url, placeholder) => {
+      $(selector).select2({
         ajax: {
-          url: 'http://127.0.0.1:8000/api/skills/',
-          dataType: 'json',
-          delay: 250,
+          url, dataType:'json', delay:250,
           data: params => ({ search: params.term }),
-          processResults: data => ({
-            results: data.map(skill => ({ id: skill.id, text: skill.name }))
-          }),
-          cache: true
+          processResults: data => ({ results: data.map(d => ({ id: d.id, text: d.name })) }),
+          cache:true
         },
-        minimumInputLength: 1,
-        placeholder: 'Search and select Skills',
-        width: 'resolve'
+        placeholder, minimumInputLength:1, width:'resolve'
       });
+    };
 
-      // ⚡ Initialize Role Select2
-      $('#roleSelect').select2({
-        ajax: {
-          url: 'http://127.0.0.1:8000/api/jobroles/',
-          dataType: 'json',
-          delay: 250,
-          data: params => ({ search: params.term }),
-          processResults: data => ({
-            results: data.map(role => ({ id: role.id, text: role.name }))
-          }),
-          cache: true
-        },
-        minimumInputLength: 1,
-        placeholder: 'Search and select Roles',
-        width: 'resolve'
-      });
+    initSelect2('#skillSelect','http://127.0.0.1:8000/api/skills/','Search and select Skills');
+    initSelect2('#roleSelect','http://127.0.0.1:8000/api/jobroles/','Search and select Roles');
+    initSelect2('#locationSelect','http://127.0.0.1:8000/api/locations/','Search and select Location');
 
-      // ⚡ Initialize Location Select2
-      $('#locationSelect').select2({
-        ajax: {
-          url: 'http://127.0.0.1:8000/api/locations/',
-          dataType: 'json',
-          delay: 250,
-          data: params => ({ search: params.term }),
-          processResults: data => ({
-            results: data.map(location => ({ id: location.id, text: location.name }))
-          }),
-          cache: true
-        },
-        minimumInputLength: 1,
-        placeholder: 'Search and select Location',
-        width: 'resolve'
-      });
-
-      // 🏷️ Fetch Job Types from API
-      axios.get("http://127.0.0.1:8000/api/jobtype/")
-        .then(res => {
-          const jobTypeSelect = document.getElementById("job_type");
-          jobTypeSelect.innerHTML = '<option value="">Select Job Type</option>';
-          res.data.forEach(type => {
-            const option = document.createElement("option");
-            option.value = type.id;
-            option.textContent = type.name;
-            jobTypeSelect.appendChild(option);
-          });
-        })
-        .catch(err => console.error("Error loading job types:", err));
-
-      // 🧾 Load jobs
-      function loadJobs() {
-        axios.get("http://127.0.0.1:8000/api/jobs/")
-          .then(res => {
-            const container = document.getElementById("job-list");
-            container.innerHTML = "";
-
-            if (!res.data.length) {
-              container.innerHTML = "<p style='text-align:center;'>No jobs available.</p>";
-              return;
-            }
-
-            res.data.forEach(job => {
-              const jobCard = document.createElement("div");
-              jobCard.classList.add("job-card");
-              jobCard.innerHTML = `
-                <h2 class="job-title">${job.job_title || "Untitled Role"}</h2>
-                <div class="company">${job.job_company || "Unknown Company"}</div>
-                <div class="details">
-                  <strong>Experience:</strong> ${job.experience_level || "N/A"}<br/>
-                  <strong>Roles:</strong> ${Array.isArray(job.job_role) ? job.job_role.map(r => r.name).join(", ") : "N/A"}<br/>
-                  <strong>Skills:</strong> ${Array.isArray(job.needed_skills) ? job.needed_skills.map(s => s.name).join(", ") : "N/A"}<br/>
-                  <strong>Type:</strong> ${job.job_type?.name || "N/A"}<br/>
-                </div>
-                <div class="salary">₹${parseInt(job.salary_min) || 0} - ₹${parseInt(job.salary_max) || 0}</div>
-                <div>
-                  <a href="${job.job_company_website || "#"}" class="apply-btn" target="_blank">Visit Company</a>
-                  <button class="delete-btn" onclick="event.stopPropagation(); deleteJob(${job.id})">Delete</button>
-                </div>
-              `;
-              jobCard.addEventListener("click", () => window.location.href = `/job/${job.id}/`);
-              container.appendChild(jobCard);
-            });
-          })
-          .catch(err => console.error("Error fetching jobs:", err));
-      }
-
-      // 🧩 Add new job
-      window.addJob = event => {
-        event.preventDefault();
-        const newJob = {
-          job_title: document.getElementById("job_title").value,
-          job_description: document.getElementById("job_description").value,
-          job_type: parseInt(document.getElementById("job_type").value),
-          experience_level: document.getElementById("experience_level").value,
-          salary_min: parseInt(document.getElementById("salary_min").value),
-          salary_max: parseInt(document.getElementById("salary_max").value),
-          location: parseInt(document.getElementById("locationSelect").value),
-          needed_skills: Array.from(document.getElementById("skillSelect").selectedOptions).map(o => parseInt(o.value)),
-          job_role: Array.from(document.getElementById("roleSelect").selectedOptions).map(o => parseInt(o.value)),
-          apply_email: document.getElementById("apply_email").value,
-          currency: "INR",
-          is_active: true,
-          recruiter: 1
-        };
-
-        axios.post("http://127.0.0.1:8000/api/jobs/", newJob)
-          .then(() => {
-            alert("✅ Job posted successfully!");
-            document.getElementById("jobForm").reset();
-            toggleForm();
-            loadJobs();
-          })
-          .catch(err => {
-            console.error("Error posting job:", err);
-            alert("❌ Failed to post job.");
-          });
-      };
-
-      // ❌ Delete job
-      window.deleteJob = async jobId => {
-        if (!confirm("Are you sure you want to delete this job?")) return;
-        try {
-          await axios.delete(`http://127.0.0.1:8000/api/jobs/${jobId}/`, {
-            headers: { "X-CSRFToken": getCookie("csrftoken") }
-          });
-          alert("✅ Job deleted successfully!");
-          loadJobs();
-        } catch (err) {
-          console.error("Error deleting job:", err);
-          alert("❌ Failed to delete job.");
-        }
-      };
-
-      loadJobs();
+    // Load Job Types
+    axios.get("http://127.0.0.1:8000/api/jobtype/").then(res => {
+      const select = document.getElementById("job_type");
+      select.innerHTML = '<option value="">Select Job Type</option>';
+      res.data.forEach(t => select.append(new Option(t.name, t.id)));
     });
-  </script>
+
+    const loadJobs = () => {
+      axios.get("http://127.0.0.1:8000/api/jobs/").then(res => {
+        const container = document.getElementById("job-list");
+        container.innerHTML = "";
+        if (!res.data.length) return container.innerHTML = "<p style='text-align:center;'>No jobs available.</p>";
+        res.data.forEach(job => {
+          const card = document.createElement("div");
+          card.className = "job-card";
+          card.innerHTML = `
+            <h2 class="job-title">${job.job_title || "Untitled Role"}</h2>
+            <div class="company">${job.job_company || "Unknown Company"}</div>
+            <div class="details">
+              <strong>Experience:</strong> ${job.experience_level || "N/A"}<br/>
+              <strong>Roles:</strong> ${Array.isArray(job.job_role)?job.job_role.map(r=>r.name).join(", "):"N/A"}<br/>
+              <strong>Skills:</strong> ${Array.isArray(job.needed_skills)?job.needed_skills.map(s=>s.name).join(", "):"N/A"}<br/>
+              <strong>Type:</strong> ${job.job_type?.name || "N/A"}<br/>
+            </div>
+            <div class="salary">₹${parseInt(job.salary_min)||0} - ₹${parseInt(job.salary_max)||0}</div>
+            <div>
+              <a href="${job.job_company_website||"#"}" class="apply-btn" target="_blank">Visit Company</a>
+              <button class="delete-btn" onclick="event.stopPropagation(); deleteJob(${job.id})">Delete</button>
+            </div>
+          `;
+          card.addEventListener("click",()=>window.location.href=`/job/${job.id}/`);
+          container.appendChild(card);
+        });
+      }).catch(err => console.error("Failed to load jobs:", err.response?.data || err));
+    };
+
+    window.addJob = e => {
+      e.preventDefault();
+      const newJob = {
+        job_title: document.getElementById("job_title").value,
+        job_description: document.getElementById("job_description").value,
+        job_type: parseInt(document.getElementById("job_type").value),
+        experience_level: document.getElementById("experience_level").value,
+        salary_min: parseFloat(document.getElementById("salary_min").value),
+        salary_max: parseFloat(document.getElementById("salary_max").value),
+        location: parseInt(document.getElementById("locationSelect").value),
+        needed_skills: Array.from(document.getElementById("skillSelect").selectedOptions).map(o => parseInt(o.value)),
+        job_role: Array.from(document.getElementById("roleSelect").selectedOptions).map(o => parseInt(o.value)),
+        apply_email: document.getElementById("apply_email").value,
+        currency: "INR",
+        is_active: true
+      };
+
+      axios.post("http://127.0.0.1:8000/api/jobs/", newJob)
+        .then(()=>{ 
+          alert("✅ Job posted successfully!"); 
+          document.getElementById("jobForm").reset(); 
+          toggleForm(); 
+          loadJobs(); 
+        })
+        .catch(err=>{
+          console.error("Job post failed:", err.response?.data || err);
+          if(err.response?.data) alert("❌ Failed to post job:\n" + JSON.stringify(err.response.data));
+          else alert("❌ Failed to post job. Check console for details.");
+        });
+    };
+
+    window.deleteJob = async id => {
+      if(!confirm("Are you sure?")) return;
+      try {
+        await axios.delete(`http://127.0.0.1:8000/api/jobs/${id}/`, { headers:{ "X-CSRFToken": getCookie('csrftoken') } });
+        alert("✅ Job deleted successfully!"); loadJobs();
+      } catch (err) { 
+        console.error(err.response?.data || err);
+        alert("❌ Failed to delete job."); 
+      }
+    };
+
+    loadJobs();
+  });
+</script>
+
 </body>
 </html>
