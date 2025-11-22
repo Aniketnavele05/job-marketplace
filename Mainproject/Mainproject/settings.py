@@ -135,7 +135,7 @@ LOGIN_REDIRECT_URL = "talent_dashboard"
 LOGOUT_REDIRECT_URL = "login_view"
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES':{
-        'rest_framework_simplejwt.authentication.JWTAthentication',
-    }
+    'DEFAULT_AUTHENTICATION_CLASSES':[
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ]
 }

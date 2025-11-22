@@ -199,9 +199,9 @@ loginForm.addEventListener('submit', async (e) => {
         const userInfo = await fetchUserType(data.access);
         if(userInfo){
             if(userInfo.user_type === 'talent'){
-                window.location.href = '/dashboard/talent/';
+                window.location.href = '/talent/';
             } else if(userInfo.user_type === 'recruiter'){
-                window.location.href = '/dashboard/recruiter/';
+                window.location.href = '/recruiter/';
             }
         }
     } else {
@@ -230,9 +230,9 @@ registerForm.addEventListener('submit', async (e) => {
         const userInfo = await fetchUserType(data.access);
         if(userInfo){
             if(userInfo.user_type === 'talent'){
-                window.location.href = '/dashboard/talent/';
+                window.location.href = '/talent/';
             } else if(userInfo.user_type === 'recruiter'){
-                window.location.href = '/dashboard/recruiter/';
+                window.location.href = '/recruiter/';
             }
         }
     } else {

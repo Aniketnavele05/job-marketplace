@@ -7,6 +7,7 @@ from rest_framework import viewsets, generics, filters, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
@@ -90,7 +91,7 @@ class JobContentView(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated(),IsRecruiter()]
 
     def perform_create(self,serializer):
-        serializer.save(recruiter=self.request.user)
+        serializer.save(recruiter=self.request.user.recruiter_profile)
         
 
 # ------------------------------------------

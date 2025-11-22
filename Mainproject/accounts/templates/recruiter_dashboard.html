@@ -1,435 +1,283 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Recruiter Dashboard — Create Jobs</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recruiter Dashboard — Create Jobs</title>
 
-  <!-- Select2 & jQuery -->
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- jQuery & Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-  <!-- Axios -->
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- Axios -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-  <style>
-    :root { --accent-green: #2f9e44; --muted: #f6f7f8; --card: #ffffff; --text: #222; }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: var(--muted);
-      color: var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
+<style>
+:root { --accent-green: #2f9e44; --muted: #f6f7f8; --card: #fff; --text: #222; }
+body { margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial; background:var(--muted); color:var(--text); }
 
-    /* NAV */
-    .navbar {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      background: #fff;
-      padding: 14px 24px;
-      box-shadow: 0 2px 8px rgba(16,24,40,0.04);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-    .logo { font-weight:700; letter-spacing: -0.2px; font-size: 1.1rem; color: var(--accent-green); }
-    .nav-links { display:flex; gap:10px; align-items:center; }
-    .nav-links a { text-decoration:none; padding:8px 12px; border-radius:8px; font-weight:600; color: #333; background: #fff; border:1px solid #eee; }
-    .nav-notif { position:relative; display:inline-block; }
-    .nav-notif .dot { position:absolute; top:6px; right:6px; width:8px; height:8px; background: var(--accent-green); border-radius:50%; }
+/* NAVBAR */
+.navbar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:14px 24px; box-shadow:0 2px 8px rgba(16,24,40,0.04); position:sticky; top:0; z-index:50; }
+.logo { font-weight:700; font-size:1.1rem; color:var(--accent-green); }
+.nav-links { display:flex; gap:10px; align-items:center; }
+.nav-links a { text-decoration:none; padding:8px 12px; border-radius:8px; font-weight:600; color:#333; background:#fff; border:1px solid #eee; }
 
-    /* HERO */
-    .hero {
-      padding: 28px 16px;
-      text-align:left;
-      background: #fff;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .hero h1 { margin: 0; font-size: 1.5rem; color: var(--accent-green); }
-    .hero p { margin: 8px 0 0; color: #666; }
+/* HERO */
+.hero { padding:28px 16px; text-align:left; background:#fff; border-bottom:1px solid #f0f0f0; }
+.hero h1 { margin:0; font-size:1.5rem; color:var(--accent-green); }
+.hero p { margin:8px 0 0; color:#666; }
 
-    /* JOB LIST */
-    #job-list { padding: 18px 12px 80px; max-width: 980px; margin: 0 auto; }
-    .job-card {
-      background: var(--card);
-      border-radius: 10px;
-      padding: 18px;
-      margin: 14px 0;
-      box-shadow: 0 6px 18px rgba(16,24,40,0.04);
-      cursor: pointer;
-      transition: transform .14s ease, box-shadow .14s ease;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .job-card:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(16,24,40,0.06); }
+/* JOB LIST */
+#job-list { padding:18px 12px 80px; max-width:980px; margin:0 auto; }
+.job-card { background:var(--card); border-radius:10px; padding:18px; margin:14px 0; box-shadow:0 6px 18px rgba(16,24,40,0.04); cursor:pointer; transition: transform .14s ease, box-shadow .14s ease; display:flex; flex-direction:column; gap:8px; }
+.job-card:hover { transform: translateY(-6px); box-shadow:0 10px 30px rgba(16,24,40,0.06); }
+.job-title { font-size:1.15rem; font-weight:700; color:var(--accent-green); }
+.job-roles, .job-desc, .job-skills, .company { color:var(--accent-green); margin:0; font-weight:600; opacity:0.95; }
+.meta { color:#555; font-size:0.95rem; margin-top:6px; font-weight:500; }
 
-    .job-title { font-size: 1.15rem; font-weight: 700; margin-bottom:0; color: var(--accent-green); }
-    .job-roles, .job-desc, .job-skills, .company { color: var(--accent-green); margin: 0; font-weight:600; opacity:0.95; }
-    .meta { color: #555; font-size: 0.95rem; margin-top:6px; font-weight:500; }
+/* Floating add button */
+.add-job-btn { position:fixed; right:28px; bottom:28px; width:56px; height:56px; border-radius:999px; background:#fff; border:1px solid #eee; display:flex; align-items:center; justify-content:center; font-size:28px; cursor:pointer; box-shadow:0 10px 30px rgba(16,24,40,0.06); z-index:1000; }
+.add-job-btn:hover { transform: translateY(-4px); }
 
-    /* Floating add button */
-    .add-job-btn {
-      position: fixed;
-      right: 28px;
-      bottom: 28px;
-      width: 56px;
-      height: 56px;
-      border-radius: 999px;
-      background: #fff;
-      border: 1px solid #eee;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 28px;
-      cursor:pointer;
-      box-shadow: 0 10px 30px rgba(16,24,40,0.06);
-      z-index: 1000;
-    }
-    .add-job-btn:hover { transform: translateY(-4px); }
-
-    /* FORM MODAL (centered) */
-    .job-form-container {
-      display:none; /* toggled by JS */
-      position: fixed;
-      inset: 0;
-      z-index: 1100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: rgba(0,0,0,0.35);
-    }
-    .job-form {
-      width: 100%;
-      max-width: 780px;
-      background: #fff;
-      border-radius: 12px;
-      padding: 22px;
-      box-shadow: 0 18px 60px rgba(8,15,30,0.12);
-      overflow:auto;
-      max-height: 92vh;
-    }
-    .job-form h2 { margin:0 0 12px; color: var(--accent-green); }
-    .row { display:flex; gap:12px; }
-    .col { flex:1; }
-
-    label { display:block; font-weight:600; margin:12px 0 6px; color: var(--accent-green); }
-    input[type="text"], input[type="number"], textarea, select {
-      width:100%;
-      padding:10px 12px;
-      border-radius:8px;
-      border:1px solid #e6e6e6;
-      background: #fff;
-      font-size:1rem;
-      color: #222;
-    }
-    textarea { min-height:120px; resize:vertical; }
-
-    .small { font-size:0.92rem; color:#666; margin-top:6px; }
-
-    .actions { margin-top:16px; display:flex; gap:10px; justify-content:flex-end; }
-    .btn-primary {
-      background: #fff;
-      border: 1px solid #ddd;
-      padding:10px 14px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:700;
-    }
-    .btn-submit {
-      background: var(--accent-green);
-      color: #fff;
-      border: none;
-      padding:10px 14px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:700;
-    }
-
-    /* small helper note */
-    .hint { font-size:0.92rem; color:#666; margin-top:6px; }
-
-    @media (max-width:880px) {
-      .row { flex-direction:column; }
-      .add-job-btn { right: 16px; bottom: 16px; width:52px; height:52px; font-size:24px; }
-    }
-  </style>
+/* FORM MODAL */
+.job-form-container { display:none; position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; padding:24px; background: rgba(0,0,0,0.35);}
+.job-form { width:100%; max-width:780px; background:#fff; border-radius:12px; padding:22px; box-shadow:0 18px 60px rgba(8,15,30,0.12); overflow:auto; max-height:92vh;}
+.job-form h2 { margin:0 0 12px; color:var(--accent-green); }
+.row { display:flex; gap:12px; }
+.col { flex:1; }
+label { display:block; font-weight:600; margin:12px 0 6px; color: var(--accent-green); }
+input[type="text"], input[type="number"], textarea, select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e6e6; font-size:1rem; color:#222; }
+textarea { min-height:120px; resize:vertical; }
+.actions { margin-top:16px; display:flex; gap:10px; justify-content:flex-end; }
+.btn-primary { background:#fff; border:1px solid #ddd; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
+.btn-submit { background:var(--accent-green); color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
+.hint { font-size:0.92rem; color:#666; margin-top:6px; }
+</style>
 </head>
 <body>
 
-  <nav class="navbar">
-    <div style="display:flex;gap:12px;align-items:center;">
-      <div class="logo">Founditt</div>
-      <div class="hint">Recruiter Panel</div>
-    </div>
-
-    <div class="nav-links">
-      <div class="nav-notif">
-        <a class="profile" href="#">Notifications</a>
-        <span class="dot" title="new"></span>
-      </div>
-      <a class="profile" href="#">Profile</a>
-      <a class="logout" href="#">Logout</a>
-    </div>
-  </nav>
-
-  <section class="hero">
-    <h1>Create & Manage Jobs</h1>
-    <p>Click the <strong>＋</strong> button to open the job form. You can select existing entries or type new ones directly (single combined input).</p>
-  </section>
-
-  <main id="job-list" aria-live="polite"></main>
-
-  <button class="add-job-btn" id="openForm" title="Add job">＋</button>
-
-  <!-- FORM MODAL -->
-  <div class="job-form-container" id="modal">
-    <form class="job-form" id="jobForm" onsubmit="submitJob(event)">
-      <h2>Post a New Job</h2>
-
-      <label for="job_title">Job title</label>
-      <input id="job_title" type="text" required />
-
-      <label for="job_description">Description</label>
-      <textarea id="job_description" required></textarea>
-
-      <div class="row">
-        <div class="col">
-          <label for="job_role_select">Roles (choose existing or type new)</label>
-          <select id="job_role_select" multiple style="width:100%"></select>
-          <div class="hint">Start typing to search roles — press Enter to add a new role.</div>
-        </div>
-
-        <div class="col">
-          <label for="skill_select">Skills (choose existing or type new)</label>
-          <select id="skill_select" multiple style="width:100%"></select>
-          <div class="hint">Start typing to search skills — press Enter to add a new skill.</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <label for="location_select">Location (choose or type)</label>
-          <select id="location_select" multiple style="width:100%"></select>
-          <div class="hint">You can add multiple locations; new entries will be created automatically.</div>
-        </div>
-
-        <div class="col">
-          <label for="jobtype_select">Job Type (choose or type)</label>
-          <select id="jobtype_select" multiple style="width:100%"></select>
-          <div class="hint">Common types: Full Time, Part Time, Contract. Type to add new.</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <label for="salary_min">Salary min</label>
-          <input id="salary_min" type="number" step="0.01" placeholder="e.g. 20000" />
-        </div>
-        <div class="col">
-          <label for="salary_max">Salary max</label>
-          <input id="salary_max" type="number" step="0.01" placeholder="e.g. 50000" />
-        </div>
-      </div>
-
-      <label for="experience_level">Experience level</label>
-      <select id="experience_level">
-        <option value="">Choose</option>
-        <option value="Internship">Internship</option>
-        <option value="Entry Level">Entry Level</option>
-        <option value="Mid Level">Mid Level</option>
-        <option value="Senior Level">Senior Level</option>
-      </select>
-
-      <label for="benefits">Benefits (short)</label>
-      <input id="benefits" type="text" placeholder="e.g. Health insurance, Remote friendly" />
-
-      <label for="apply_email">Apply email</label>
-      <input id="apply_email" type="email" placeholder="hr@company.com" />
-
-      <div class="actions">
-        <button type="button" class="btn-primary" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn-submit">Post Job</button>
-      </div>
-    </form>
+<nav class="navbar">
+  <div style="display:flex;gap:12px;align-items:center;">
+    <div class="logo">Founditt</div>
+    <div class="hint">Recruiter Panel</div>
   </div>
+  <div class="nav-links">
+    <a href="#">Notifications</a>
+    <a href="#">Profile</a>
+    <a href="#">Logout</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Create & Manage Jobs</h1>
+  <p>Click the <strong>＋</strong> button to open the job form. You can select existing entries or type new ones directly.</p>
+</section>
+
+<main id="job-list" aria-live="polite"></main>
+<button class="add-job-btn" id="openForm" title="Add job">＋</button>
+
+<div class="job-form-container" id="modal">
+<form class="job-form" id="jobForm" onsubmit="submitJob(event)">
+<h2>Post a New Job</h2>
+
+<label for="job_title">Job title</label>
+<input id="job_title" type="text" required />
+
+<label for="job_description">Description</label>
+<textarea id="job_description" required></textarea>
+
+<div class="row">
+  <div class="col">
+    <label for="job_role_select">Roles</label>
+    <select id="job_role_select" multiple style="width:100%"></select>
+  </div>
+  <div class="col">
+    <label for="skill_select">Skills</label>
+    <select id="skill_select" multiple style="width:100%"></select>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <label for="location_select">Location</label>
+    <select id="location_select" multiple style="width:100%"></select>
+  </div>
+  <div class="col">
+    <label for="jobtype_select">Job Type</label>
+    <select id="jobtype_select" multiple style="width:100%"></select>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <label for="salary_min">Salary min</label>
+    <input id="salary_min" type="number" step="0.01" placeholder="20000" />
+  </div>
+  <div class="col">
+    <label for="salary_max">Salary max</label>
+    <input id="salary_max" type="number" step="0.01" placeholder="50000" />
+  </div>
+</div>
+
+<label for="experience_level">Experience level</label>
+<select id="experience_level">
+<option value="">Choose</option>
+<option value="Internship">Internship</option>
+<option value="Entry Level">Entry Level</option>
+<option value="Mid Level">Mid Level</option>
+<option value="Senior Level">Senior Level</option>
+</select>
+
+<label for="benefits">Benefits</label>
+<input id="benefits" type="text" placeholder="Health insurance, Remote friendly" />
+
+<label for="apply_email">Apply email</label>
+<input id="apply_email" type="email" placeholder="hr@company.com" />
+
+<div class="actions">
+  <button type="button" class="btn-primary" onclick="closeModal()">Cancel</button>
+  <button type="submit" class="btn-submit">Post Job</button>
+</div>
+</form>
+</div>
 
 <script>
-/* ========== Config ========== */
 const API_BASE = "/api";
-const ACCESS = localStorage.getItem("access"); // JWT token stored earlier
-const authHeader = ACCESS ? { Authorization: "Bearer " + ACCESS } : {};
-
-/* ========== Helpers ========== */
-const el = id => document.getElementById(id);
-const textOfSelected = sel => Array.from(sel.selectedOptions).map(o => o.text.trim()).filter(Boolean);
-
-/* ========== Modal toggles ========== */
+const el = id=>document.getElementById(id);
 const modal = el("modal");
-const openForm = el("openForm");
-openForm.addEventListener("click", () => showModal());
-function showModal(){
-  modal.style.display = "flex";
-  // focus first input for quick typing
-  setTimeout(()=> el("job_title").focus(), 80);
-}
-function closeModal(){
-  modal.style.display = "none";
-  // tiny UX: return focus to + button
-  setTimeout(()=> openForm.focus(), 50);
-}
+const openFormBtn = el("openForm");
+localStorage.setItem("recruiterId", data.recruiterId); // <- the ID you get from backend
+localStorage.setItem("access", data.access);
+localStorage.setItem("refresh", data.refresh);
 
-/* click outside to close (nice UX) */
-modal.addEventListener("click", e => {
-  if(e.target === modal) closeModal();
-});
+// Modal open/close
+openFormBtn.onclick = ()=>{ modal.style.display="flex"; el("job_title").focus(); }
+function closeModal(){ modal.style.display="none"; el("jobForm").reset(); }
 
-/* ESC to close */
-document.addEventListener("keydown", e => {
-  if(e.key === "Escape" && modal.style.display === "flex") closeModal();
-});
+// Click outside to close
+modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && modal.style.display==="flex") closeModal(); });
 
-/* ========== Initialize Select2 (tags + ajax) ========== */
-function initTagsSelect2(selector, url, placeholder){
+// Initialize Select2 with tags + AJAX
+function initTags(selector,url,placeholder){
   $(selector).select2({
-    tags: true,               // allow typing new values
-    tokenSeparators: [','],   // comma separates
-    ajax: {
-      url,
-      dataType: 'json',
-      delay: 200,
-      data: params => ({ search: params.term }),
-      processResults: data => ({ results: data.map(d => ({ id: d.name || d.id || d, text: d.name || d })) }),
-      cache: true
+    tags:true,
+    tokenSeparators:[','],
+    ajax:{
+      url, dataType:'json', delay:200,
+      data:params=>({search:params.term}),
+      processResults:data=>({results:data.map(d=>({id:d.name||d.id||d,text:d.name||d}))}),
+      cache:true
     },
     placeholder,
-    minimumInputLength: 0,
-    width: '100%'
+    width:'100%',
+    minimumInputLength:0
   });
 }
 
-/* ========== Bootstrapping selects ========== */
-document.addEventListener("DOMContentLoaded", () => {
-  // Initialize taggable selects
-  initTagsSelect2("#skill_select", `${API_BASE}/skills/`, "Search or type skills...");
-  initTagsSelect2("#job_role_select", `${API_BASE}/jobroles/`, "Search or type roles...");
-  initTagsSelect2("#location_select", `${API_BASE}/locations/`, "Search or type locations...");
-  initTagsSelect2("#jobtype_select", `${API_BASE}/jobtype/`, "Search or type job types...");
-
-  // Load jobs into list
-  loadJobs();
-});
-
-/* ========== Load & render jobs ========== */
+// Load jobs
 async function loadJobs(){
-  try {
+  try{
     const res = await axios.get(`${API_BASE}/jobs/`);
     const jobs = res.data || [];
     const container = el("job-list");
     container.innerHTML = "";
-    if(!jobs.length) return container.innerHTML = "<p style='text-align:center;color:#666'>No jobs yet</p>";
+    if(!jobs.length) return container.innerHTML="<p style='text-align:center;color:#666'>No jobs yet</p>";
 
-    jobs.forEach(j => {
+    jobs.forEach(j=>{
       const card = document.createElement("div");
-      card.className = "job-card";
-      const roles = Array.isArray(j.job_role) ? j.job_role.map(r=>r.name).join(", ") : (j.job_role?.name || "");
-      const skills = Array.isArray(j.needed_skills)? j.needed_skills.map(s=>s.name).join(", ") : "";
-      const desc = j.job_description ? (j.job_description.length > 160 ? j.job_description.slice(0,160)+"…" : j.job_description) : "";
-
-      card.innerHTML = `
-        <div class="job-title">${escapeHtml(j.job_title || "Untitled")}</div>
-        <div class="job-roles">Role(s): ${escapeHtml(roles || "N/A")}</div>
-        <div class="job-desc">${escapeHtml(desc || "No description")}</div>
-        <div class="job-skills">Skills: ${escapeHtml(skills || "N/A")}</div>
-        <div class="company">Company: ${escapeHtml(j.job_company || "Unknown")}</div>
-        <div class="meta">Type: ${escapeHtml(j.job_type?.name || "N/A")} • Experience: ${escapeHtml(j.experience_level || "N/A")}</div>
+      card.className="job-card";
+      const roles = Array.isArray(j.job_role)? j.job_role.map(r=>r.name).join(", ") : j.job_role?.name || "";
+      const skills = Array.isArray(j.needed_skills)? j.needed_skills.map(s=>s.name).join(","):"";
+      const desc = j.job_description ? (j.job_description.length>160 ? j.job_description.slice(0,160)+"…":j.job_description) : "";
+      card.innerHTML=`
+        <div class="job-title">${roles?roles:"Untitled"}</div>
+        <div class="job-roles">Role(s): ${roles||"N/A"}</div>
+        <div class="job-desc">${desc||"No description"}</div>
+        <div class="job-skills">Skills: ${skills||"N/A"}</div>
+        <div class="company">Company: ${j.job_company||"Unknown"}</div>
+        <div class="meta">Type: ${j.job_type?.name||"N/A"} • Experience: ${j.experience_level||"N/A"}</div>
       `;
-      card.addEventListener("click", ()=> window.location.href = `/job/${j.id}/`);
       container.appendChild(card);
     });
-
-  } catch (err) {
-    console.error("Failed to load jobs", err);
-    el("job-list").innerHTML = "<p style='text-align:center;color:#c00'>Failed to load jobs</p>";
+  }catch(err){
+    console.error(err);
+    el("job-list").innerHTML="<p style='text-align:center;color:#c00'>Failed to load jobs</p>";
   }
 }
 
-/* ========== Submit job ========== */
+// Refresh token
+async function refreshToken(){
+  const REFRESH = localStorage.getItem("refresh");
+  if(!REFRESH) return null;
+  try{
+    const res = await axios.post(`${API_BASE}/token/refresh/`, {refresh:REFRESH});
+    localStorage.setItem("access", res.data.access);
+    return res.data.access;
+  }catch(err){
+    alert("Session expired. Login again.");
+    return null;
+  }
+}
+
+// Submit job
 async function submitJob(e){
   e.preventDefault();
-
-  // select2 returns array of strings (names) when tags:true used
-  const skills_vals = $('#skill_select').val() || [];
-  const roles_vals = $('#job_role_select').val() || [];
-  const locations_vals = $('#location_select').val() || [];
-  const jobtypes_vals = $('#jobtype_select').val() || [];
+  const recruiter = localStorage.getItem("recruiterId");
+  if(!recruiter){ alert("Recruiter ID missing. Login again."); return; }
 
   const payload = {
     job_title: el("job_title").value.trim(),
     job_description: el("job_description").value.trim(),
-    needed_skills_names: Array.from(new Set(skills_vals)),
-    job_role_names: Array.from(new Set(roles_vals)),
-    // pick first provided location/job type (serializer expects single string)
-    location_name: locations_vals.length ? locations_vals[0] : null,
-    job_type_name: jobtypes_vals.length ? jobtypes_vals[0] : null,
-    salary_min: el("salary_min").value ? parseFloat(el("salary_min").value) : null,
-    salary_max: el("salary_max").value ? parseFloat(el("salary_max").value) : null,
-    experience_level: el("experience_level").value || null,
-    benefits: el("benefits").value || "",
-    apply_email: el("apply_email").value || "",
-    currency: "INR",
-    is_active: true
+    needed_skills_names: $('#skill_select').val() || [],
+    job_role_names: $('#job_role_select').val() || [],
+    location_name: $('#location_select').val()[0]||"",
+    job_type_name: $('#jobtype_select').val()[0]||"",
+    salary_min: parseFloat(el("salary_min").value)||null,
+    salary_max: parseFloat(el("salary_max").value)||null,
+    experience_level: el("experience_level").value||null,
+    benefits: el("benefits").value||"",
+    apply_email: el("apply_email").value||"",
+    currency:"INR",
+    is_active:true,
+    recruiter
   };
 
-  if(!payload.job_title || !payload.job_description){
-    alert("Please fill job title and description.");
-    return;
+  if(!payload.job_title || !payload.job_description){ alert("Fill title & description."); return; }
+
+  async function tryPost(token){
+    return axios.post(`${API_BASE}/jobs/`, payload, {headers:{Authorization:"Bearer "+token}});
   }
 
-  try {
-    const headers = { "Content-Type":"application/json", ...authHeader };
-    await axios.post(`${API_BASE}/jobs/`, payload, { headers });
+  try{
+    await tryPost(localStorage.getItem("access"));
     alert("✅ Job posted");
-    closeModal();
-    document.getElementById("jobForm").reset();
-    // Clear select2 selections
-    $("#skill_select").val(null).trigger("change");
-    $("#job_role_select").val(null).trigger("change");
-    $("#location_select").val(null).trigger("change");
-    $("#jobtype_select").val(null).trigger("change");
-    loadJobs();
-  } catch (err) {
-    console.error("Post failed:", err.response?.data || err);
-    const msg = err.response?.data ? JSON.stringify(err.response.data) : "Failed to post job";
-    alert("❌ " + msg);
+  }catch(err){
+    if(err.response?.status===401){
+      const newAccess = await refreshToken();
+      if(newAccess) await tryPost(newAccess);
+      else return;
+      alert("✅ Job posted after token refresh");
+    }else{
+      alert("❌ "+JSON.stringify(err.response?.data||err));
+      return;
+    }
   }
+
+  closeModal();
+  $("#skill_select,#job_role_select,#location_select,#jobtype_select").val(null).trigger("change");
+  loadJobs();
 }
 
-/* ========== Delete job helper (uses JWT) ========== */
-async function deleteJob(id){
-  if(!confirm("Delete this job?")) return;
-  try {
-    const headers = {...authHeader};
-    await axios.delete(`${API_BASE}/jobs/${id}/`, { headers });
-    alert("✅ Deleted");
-    loadJobs();
-  } catch (err) {
-    console.error("delete failed", err);
-    alert("❌ Failed to delete job");
-  }
-}
-
-/* ========== Utility: escape HTML (prevent XSS) ========== */
-function escapeHtml(str){
-  if(!str) return "";
-  return String(str).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
-}
+// Initialize selects & jobs
+document.addEventListener("DOMContentLoaded",()=>{
+  initTags("#skill_select", `${API_BASE}/skills/`, "Search or type skills...");
+  initTags("#job_role_select", `${API_BASE}/jobroles/`, "Search or type roles...");
+  initTags("#location_select", `${API_BASE}/locations/`, "Search or type locations...");
+  initTags("#jobtype_select", `${API_BASE}/jobtype/`, "Search or type job types...");
+  loadJobs();
+});
 </script>
 </body>
 </html>
