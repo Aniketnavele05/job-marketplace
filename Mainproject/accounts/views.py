@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views import View
-from rest_framework import viewsets, generics, filters, status
+from rest_framework import viewsets, generics, filters, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -25,14 +25,13 @@ from .models import (
 )
 from .serializers import (
     JobContentSerializer,
-    JobUpdateSerializer,
     SkillsSerializer,
     JobRoleSerializer,
     LocationSerializer,
     JobTypeSerializer,
     RegSerializer
 )
-from .permissions import IsRecruiterOwner
+from .permissions import IsRecruiter
 
 
 class IndexView(View):
@@ -81,55 +80,18 @@ def recruiter_dashboard(request):
 # 🔹 JOB CONTENT API (CRUD)
 # ------------------------------------------
 class JobContentView(viewsets.ModelViewSet):
+    queryset = JobContent.objects.all()
     serializer_class = JobContentSerializer
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
+    def get_permissions(self):
+        if self.action in ['list','retrieve']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(),IsRecruiter()]
 
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'recruiter_profile'):
-            return JobContent.objects.filter(recruiter=user.recruiter_profile)
-        elif hasattr(user, 'talent_profile'):
-            return JobContent.objects.filter(is_active=True)
-        return JobContent.objects.none()
-
-    def get_serializer_class(self):
-        if self.action in ['update', 'partial_update']:
-            return JobUpdateSerializer
-        return JobContentSerializer
-
-    def perform_create(self, serializer):
-        """Create job with recruiter and set foreign keys/many-to-many fields"""
-        recruiter = self.request.user.recruiter_profile
-        job = serializer.save(recruiter=recruiter)
-
-        # Handle Many-to-Many fields
-        needed_skills_ids = self.request.data.get("needed_skills", [])
-        if needed_skills_ids:
-            skills = Skill.objects.filter(id__in=needed_skills_ids)
-            job.needed_skills.set(skills)
-
-        job_role_ids = self.request.data.get("job_role", [])
-        if job_role_ids:
-            roles = JobRole.objects.filter(id__in=job_role_ids)
-            job.job_role.set(roles)
-
-        # Handle ForeignKey fields
-        location_id = self.request.data.get("location")
-        if location_id:
-            try:
-                job.location = Location.objects.get(id=location_id)
-            except Location.DoesNotExist:
-                pass
-
-        job_type_id = self.request.data.get("job_type")
-        if job_type_id:
-            try:
-                job.job_type = JobType.objects.get(id=job_type_id)
-            except JobType.DoesNotExist:
-                pass
-
-        job.save()
-
+    def perform_create(self,serializer):
+        serializer.save(recruiter=self.request.user)
+        
 
 # ------------------------------------------
 # 🔹 STATIC CHOICES (for dropdowns)

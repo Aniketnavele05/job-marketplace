@@ -11,9 +11,9 @@ class RegSerializer(serializers.ModelSerializer):
         }
     
     def create(self, validated_data):
-        password = validated_data.pop('password')#Remove password from normal field for seprate use
-        user = CustomUser(**validated_data)#Create user without password
-        user.set_password(password)#Hashesh pass
+        password = validated_data.pop('password')# Remove password from normal field for seprate use
+        user = CustomUser(**validated_data)# Create user without password
+        user.set_password(password)#H ashesh password
         user.save()
         if user.user_type == 'talent':
             TalentProfile.objects.create(user=user)
@@ -44,48 +44,130 @@ class JobTypeSerializer(serializers.ModelSerializer):
 
 
 class JobContentSerializer(serializers.ModelSerializer):
+    # ---------------- READ ONLY (Talent View) ---------------- #
     needed_skills = SkillsSerializer(many=True, read_only=True)
     job_role = JobRoleSerializer(many=True, read_only=True)
     location = LocationSerializer(read_only=True)
     job_type = JobTypeSerializer(read_only=True)
 
+    # ---------------- WRITE ONLY (Recruiter Input) ---------------- #
+    needed_skills_names = serializers.ListField(
+        child=serializers.CharField(),
+        write_only=True,
+        required=False
+    )
+    job_role_names = serializers.ListField(
+        child=serializers.CharField(),
+        write_only=True,
+        required=False
+    )
+    location_name = serializers.CharField(write_only=True, required=False)
+    job_type_name = serializers.CharField(write_only=True, required=False)
+
+    # ---------------- Recruiter Info (Read Only) ---------------- #
+    job_company = serializers.ReadOnlyField(source='recruiter.company_name')
+    job_company_website = serializers.ReadOnlyField(source='recruiter.company_website')
+
     class Meta:
         model = JobContent
         fields = [
-            'id', 'job_title', 'job_description', 'needed_skills', 
-            'job_role', 'location', 'job_type', 'experience_level', 
-            'salary_min', 'salary_max', 'apply_email', 'is_active',
-            'recruiter', 'job_company', 'job_company_website'
+            'id', 'recruiter', 'job_title',
+
+            # Read-only nested for talent
+            'needed_skills', 'job_role', 'location', 'job_type',
+
+            # Write-only for recruiter
+            'needed_skills_names', 'job_role_names',
+            'location_name', 'job_type_name',
+
+            # Other fields
+            'salary_min', 'salary_max', 'currency',
+            'benefits', 'job_description', 'is_active', 'experience_level',
+            'apply_email',
+
+            # Recruiter info
+            'job_company', 'job_company_website'
         ]
 
-class JobUpdateSerializer(serializers.ModelSerializer):
-    location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
-    job_type = serializers.PrimaryKeyRelatedField(queryset=JobType.objects.all())
-    job_role = serializers.PrimaryKeyRelatedField(queryset=JobRole.objects.all(), many=True)
-    needed_skills = serializers.PrimaryKeyRelatedField(queryset=Skill.objects.all(), many=True)
+    # ---------------- CREATE ---------------- #
+    def create(self, validated_data):
 
-    class Meta:
-        model = JobContent
-        fields = [
-            'job_title','job_role','needed_skills','job_type','location',
-            'salary_min','salary_max','currency','benefits',
-            'job_description','experience_level','apply_email','is_active'
-        ]
-    
+        skills_data = validated_data.pop('needed_skills_names', [])
+        roles_data = validated_data.pop('job_role_names', [])
+        location_data = validated_data.pop('location_name', None)
+        job_type_data = validated_data.pop('job_type_name', None)
+
+        # Create job
+        job = JobContent.objects.create(**validated_data)
+
+        # Skills (Many-to-many)
+        skill_list = []
+        for skill_name in skills_data:
+            skill, _ = Skill.objects.get_or_create(name=skill_name)
+            skill_list.append(skill)
+        job.needed_skills.set(skill_list)
+
+        # Job roles (Many-to-many)
+        job_role_list = []
+        for role_name in roles_data:
+            role, _ = JobRole.objects.get_or_create(name=role_name)
+            job_role_list.append(role)
+        job.job_role.set(job_role_list)
+
+        # Location (FK)
+        if location_data:
+            location, _ = Location.objects.get_or_create(name=location_data)
+            job.location = location
+            job.save()
+
+        # Job type (FK)
+        if job_type_data:
+            jt, _ = JobType.objects.get_or_create(name=job_type_data)
+            job.job_type = jt
+            job.save()
+
+        return job
+
     def update(self, instance, validated_data):
-        skills_data = validated_data.pop('needed_skills', None)
-        job_role_data = validated_data.pop('job_role', None)
 
-        if job_role_data is not None:
-            instance.job_role.set(job_role_data)
-        if skills_data is not None:
-            instance.needed_skills.set(skills_data)
+        skills_data = validated_data.pop('needed_skills_names', None)
+        roles_data = validated_data.pop('job_role_names', None)
+        location_data = validated_data.pop('location_name', None)
+        job_type_data = validated_data.pop('job_type_name', None)
 
+    # Update simple fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
+    # Update skills (Many-to-Many)
+        if skills_data is not None:
+            skill_list = []
+            for name in skills_data:
+                skill, _ = Skill.objects.get_or_create(name=name)
+                skill_list.append(skill)
+            instance.needed_skills.set(skill_list)
+
+    # Update job roles (Many-to-Many)
+        if roles_data is not None:
+            role_list = []
+            for name in roles_data:
+                role, _ = JobRole.objects.get_or_create(name=name)
+                role_list.append(role)
+            instance.job_role.set(role_list)
+
+    # Update location (FK)
+        if location_data is not None:
+            location, _ = Location.objects.get_or_create(name=location_data)
+            instance.location = location
+
+    # Update job type (FK)
+        if job_type_data is not None:
+            jt, _ = JobType.objects.get_or_create(name=job_type_data)
+            instance.job_type = jt
+
         instance.save()
         return instance
-    
+            
 
 class TalentProfileSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField()

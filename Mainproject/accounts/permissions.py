@@ -1,5 +1,7 @@
 from rest_framework import permissions
 
-class IsRecruiterOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return hasattr(request.user, 'recruiter_profile') and obj.recruiter == request.user.recruiter_profile
+class IsRecruiter(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ['POST','PUT','PATCH','DELETE']:
+            return request.user.role == 'recruiter'
+        return True

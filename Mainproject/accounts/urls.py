@@ -32,7 +32,7 @@ urlpatterns = [
     path('',IndexView.as_view(),name='home'),
     path('api/register/', registrationView.as_view(), name='api_register'),
     path('api/user-info/', views.UserInfoView.as_view(), name='user_info'),
-    path('dashboard/talent/', views.talent_dashboard, name='talent_dashboard'),
-    path('dashboard/recruiter/', views.recruiter_dashboard, name='recruiter_dashboard'),
+    path('talent/', views.talent_dashboard, name='talent_dashboard'),
+    path('recruiter/', views.recruiter_dashboard, name='recruiter_dashboard'),
     path('job/<int:id>/', views.job_detail_page, name='job_detail'),
 ]

@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Talent Dashboard</title>
+  <title>Recruiter Dashboard</title>
 
   <style>
-    /* ====== GLOBAL STYLES ====== */
     body {
       margin: 0;
       font-family: "Poppins", sans-serif;
@@ -14,14 +13,14 @@
       color: #333;
     }
 
-    /* ====== NAVBAR ====== */
+    /* NAVBAR */
     .navbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       background-color: #fff;
       padding: 14px 28px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
       position: sticky;
       top: 0;
       z-index: 1000;
@@ -30,216 +29,188 @@
     .navbar .logo {
       font-size: 1.4rem;
       font-weight: bold;
-      color: #007bff; /* Talent Blue */
-    }
-
-    .navbar .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 16px;
+      color: #dc3545; /* Recruiter Red */
     }
 
     .nav-links a {
       text-decoration: none;
-      font-weight: 500;
       padding: 8px 16px;
       border-radius: 20px;
+      margin-left: 10px;
+      font-weight: 500;
       transition: 0.3s ease;
     }
 
-    /* Talent Blue Pill */
-    .nav-links a.chat {
-      background-color: #007bff;
-      color: #fff;
-      box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+    .nav-links a.profile { 
+      background: white; 
+      border: 1px solid #ccc; 
     }
 
-    .nav-links a.chat:hover {
-      background-color: #0056b3;
+    .nav-links a.logout { 
+      background: white; 
+      border: 1px solid #dc3545; 
+      color: #dc3545; 
     }
 
-    /* Profile neutral pill */
-    .nav-links a.profile {
-      color: #333;
-      border: 1px solid #ccc;
-      background-color: #fff;
-    }
-
-    .nav-links a.profile:hover {
-      background-color: #e9ecef;
-    }
-
-    /* Logout outline blue */
-    .nav-links a.logout {
-      color: #007bff;
-      border: 1px solid #007bff;
-      background-color: #fff;
-    }
-
-    .nav-links a.logout:hover {
-      background-color: #007bff;
-      color: white;
-    }
-
-    /* Recruiter Red badge (corner) */
-    .recruiter-badge {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      background-color: #dc3545;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 30px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .recruiter-badge:hover {
-      background-color: #b02a37;
-      transform: translateY(-2px);
-    }
-
-    /* ====== PAGE BODY ====== */
+    /* HERO SECTION */
     .hero {
-      padding: 60px 20px;
+      padding: 50px 20px;
       text-align: center;
-      background: #007bff
-    }
-
-    .hero h2 {
+      background: #dc3545;
       color: white;
-      font-size: 1.8rem;
-      margin-bottom: 10px;
     }
 
-    .hero p {
-      color: white;
-      font-size: 1.1rem;
+    .search-box {
+      margin-top: 18px;
     }
 
+    .search-box input {
+      width: 60%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    /* JOB CARD */
     .job-card {
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
       padding: 20px;
-      margin: 16px auto;
-      max-width: 700px;
-      text-align: left;
+      margin: 18px auto;
+      max-width: 750px;
+      cursor: pointer;
+      transition: 0.2s ease;
     }
 
-    .job-title {
-      color: #007bff;
-      margin-bottom: 8px;
+    .job-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.18);
     }
 
-    .company {
-      font-weight: 500;
-      color: #333;
-      margin-bottom: 10px;
-    }
+    .job-title { color: #dc3545; font-size: 1.4rem; }
+    .company { font-weight: 600; margin-top: 6px; color: #444; }
+    .skills { margin-top: 10px; font-size: 0.95rem; }
+    .salary { margin-top: 12px; color: #28a745; font-weight: bold; }
 
-    .salary {
-      margin-top: 10px;
-      font-weight: semi-bold;
-      color: #28a745;
-    }
-
-    .apply-btn {
-      display: inline-block;
+    .action-btns {
       margin-top: 14px;
-      padding: 8px 16px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
+    }
+
+    .action-btns button {
+      padding: 6px 12px;
+      margin-right: 10px;
+      border: none;
       border-radius: 6px;
-      transition: 0.3s;
+      cursor: pointer;
+      font-weight: 500;
     }
 
-    .apply-btn:hover {
-      background-color: #0056b3;
-    }
-
+    .edit-btn { background: #007bff; color: white; }
+    .delete-btn { background: #dc3545; color: white; }
   </style>
+
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 
-  <nav class="navbar">
-    <div class="logo">Founditt.</div>
-
-    <div class="nav-links">
-      <a href="#" class="chat">Chat</a>
-      <a href="#" class="profile">Profile</a>
-      <a href="#" class="logout">Logout</a>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-
-  <section class="hero">
-    <h2>Welcome, Talent!</h2>
-    <p>Browse jobs, manage your profile, and track your applications here.</p>
-  </section>
-
-  <div id="job-list">
+<nav class="navbar">
+  <div class="logo">Recruiter Panel</div>
+  <div class="nav-links">
+    <a class="profile">Profile</a>
+    <a class="logout">Logout</a>
   </div>
+</nav>
+
+<section class="hero">
+  <h2>Welcome Recruiter!</h2>
+  <p>Manage your job postings and find the right talent.</p>
+
+  <div class="search-box">
+    <input id="searchInput" placeholder="Search jobs by title, skills, role...">
+  </div>
+</section>
+
+<div id="job-list"></div>
 
 <script>
-  axios.get("http://127.0.0.1:8000/api/jobs/")
-    .then(response => {
-      const jobs = response.data;
-      const container = document.getElementById("job-list");
 
-      if (!container) {
-        console.error("❌ No job-list element found in HTML.");
-        return;
-      }
+function renderJobs(jobs) {
+  const container = document.getElementById("job-list");
+  container.innerHTML = "";
 
-      if (jobs.length === 0) {
-        container.innerHTML = "<p style='text-align:center;'>No jobs available right now.</p>";
-        return;
-      }
+  if (jobs.length === 0) {
+    container.innerHTML = "<p style='text-align:center;'>No jobs found.</p>";
+    return;
+  }
 
-      container.innerHTML = ""; // Clear any placeholder text
+  jobs.forEach(job => {
+    const card = document.createElement("div");
+    card.classList.add("job-card");
 
-      jobs.forEach(job => {
-        const jobCard = document.createElement("div");
-jobCard.classList.add("job-card");
+    card.onclick = () => {
+      window.location.href = `/recruiter/job/${job.id}/`;  // Job detail page
+    };
 
-// 👇 Add click event to open job details
-jobCard.onclick = function() {
-  window.location.href = `/job/${job.id}/`;  // Redirect to job detail page
-};
+    card.innerHTML = `
+      <h3 class="job-title">${job.job_title}</h3>
 
-jobCard.innerHTML = `
-  <h2 class="job-title">${job.job_title || "Untitled Role"}</h2>
-  <div class="company">${job.job_company || "Unknown Company"}</div>
+      <p><strong>Role:</strong> 
+        ${Array.isArray(job.job_role) ? job.job_role.map(r => r.name).join(", ") : ""}
+      </p>
 
-  <div class="details">
-    <strong>Type:</strong> ${job.job_type || "N/A"}<br/>
-    <strong>Experience:</strong> ${job.experience_level || "N/A"}<br/>
-    <strong>Roles:</strong> ${Array.isArray(job.job_role) ? job.job_role.map(r => r.name).join(", ") : "N/A"}<br/>
-    <strong>Skills:</strong> ${Array.isArray(job.needed_skills) ? job.needed_skills.map(s => s.name).join(", ") : "N/A"}<br/>
-  </div>
+      <p><strong>Description:</strong> ${job.job_description?.slice(0,150)}...</p>
 
-  <div class="salary">
-    ₹${parseInt(job.salary_min) || 0} - ₹${parseInt(job.salary_max) || 0} ${job.currency || ""}
-  </div>
-`;
+      <p class="skills"><strong>Skills:</strong> 
+        ${Array.isArray(job.needed_skills) ? job.needed_skills.map(s => s.name).join(", ") : ""}
+      </p>
 
-        container.appendChild(jobCard);
-      });
-    })
-    .catch(error => {
-      console.error("Error fetching jobs:", error);
-      const container = document.getElementById("job-list");
-      if (container) {
-        container.innerHTML = "<p style='text-align:center;color:red;'>Failed to load jobs.</p>";
-      }
+      <p class="company">${job.job_company}</p>
+
+      <p class="salary">
+        ₹${job.salary_min} - ₹${job.salary_max} ${job.currency}
+      </p>
+
+      <div class="action-btns">
+        <button class="edit-btn" onclick="event.stopPropagation(); window.location.href='/recruiter/edit/${job.id}/'">Edit</button>
+        <button class="delete-btn" onclick="event.stopPropagation(); deleteJob(${job.id})">Delete</button>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function deleteJob(id) {
+  if (!confirm("Delete this job?")) return;
+
+  axios.delete(`http://127.0.0.1:8000/api/jobs/${id}/`)
+    .then(() => location.reload());
+}
+
+// Load Jobs
+axios.get("http://127.0.0.1:8000/api/jobs/")
+  .then(res => {
+    let jobs = res.data;
+
+    renderJobs(jobs);
+
+    // SEARCH FUNCTION
+    document.getElementById("searchInput").addEventListener("input", function () {
+      const text = this.value.toLowerCase();
+
+      const filtered = jobs.filter(job =>
+        job.job_title.toLowerCase().includes(text) ||
+        job.job_description.toLowerCase().includes(text) ||
+        job.needed_skills.some(s => s.name.toLowerCase().includes(text))
+      );
+
+      renderJobs(filtered);
     });
+  });
+
 </script>
+
 </body>
 </html>

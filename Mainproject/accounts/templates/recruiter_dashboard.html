@@ -1,227 +1,435 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recruiter Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recruiter Dashboard — Create Jobs</title>
 
   <!-- Select2 & jQuery -->
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <!-- Axios -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
   <style>
-    body { margin:0; font-family: "Poppins", sans-serif; background:#f8f9fa; color:#333; }
-    .navbar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:14px 28px; box-shadow:0 2px 6px rgba(0,0,0,0.08); position:sticky; top:0; z-index:1000; }
-    .navbar .logo { font-size:1.4rem; font-weight:bold; color:#dc3545; }
-    .nav-links { display:flex; gap:16px; }
-    .nav-links a { text-decoration:none; padding:8px 16px; border-radius:20px; font-weight:500; transition:.3s; }
-    .chat { background:#dc3545; color:#fff; box-shadow:0 2px 5px rgba(220,53,69,0.3); }
-    .chat:hover { background:#b02a37; }
-    .profile { color:#333; border:1px solid #ccc; background:#fff; }
-    .profile:hover { background:#e9ecef; }
-    .logout { color:#dc3545; border:1px solid #dc3545; background:#fff; }
-    .logout:hover { background:#dc3545; color:#fff; }
-    .hero { text-align:center; padding:60px 20px; background:#dc3545; color:#fff; }
-    .hero h1 { font-size:1.8rem; margin-bottom:10px; }
-    .hero p { font-size:1.1rem; }
-    .job-card { background:#fff; margin:20px auto; padding:20px; max-width:700px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); cursor:pointer; transition:.2s; }
-    .job-card:hover { transform:translateY(-4px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
-    .job-title { color:#dc3545; font-size:1.3rem; margin-bottom:8px; }
-    .company { font-weight:500; color:#555; margin-bottom:12px; }
-    .details { color:#666; font-size:.95rem; line-height:1.5; margin-bottom:10px; }
-    .salary { font-weight:bold; color:#dc3545; margin-bottom:14px; }
-    .apply-btn { background:#dc3545; color:#fff; padding:8px 16px; border-radius:20px; text-decoration:none; transition:.3s; }
-    .apply-btn:hover { background:#b02a37; }
-    .delete-btn { margin-left:10px; background:#fff; color:#dc3545; border:1px solid #dc3545; padding:6px 12px; border-radius:8px; cursor:pointer; transition:.2s; }
-    .delete-btn:hover { background:#dc3545; color:#fff; }
-    .add-job-btn { position:fixed; bottom:30px; right:30px; background:#dc3545; color:#fff; border:none; border-radius:50px; padding:10px 15px; font-size:20px; font-weight:800; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.2); z-index:1000; transition:.3s; }
-    .add-job-btn:hover { background:#b02a37; }
-    .job-form-container { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:30px 40px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15); z-index:1001; width:90%; max-width:600px; overflow-y:auto; max-height:90vh; }
-    .job-form-container h2 { text-align:center; color:#dc3545; margin-bottom:20px; }
-    .job-form-container label { display:block; font-weight:600; margin-top:12px; margin-bottom:6px; color:#333; }
-    .job-form-container input, .job-form-container select { width:100%; padding:10px 12px; border:1px solid #ccc; border-radius:8px; font-size:.95rem; margin-bottom:12px; transition:.3s; }
-    .job-form-container input:focus, .job-form-container select:focus { border-color:#dc3545; box-shadow:0 0 6px rgba(220,53,69,.3); outline:none; }
-    select[multiple] { min-height:120px; }
-    .job-form-container button[type="submit"], .cancel-btn { border-radius:25px; padding:10px 20px; font-weight:700; cursor:pointer; margin-top:10px; transition:.3s; }
-    .job-form-container button[type="submit"] { background:#dc3545; color:#fff; border:none; }
-    .job-form-container button[type="submit"]:hover { background:#b02a37; }
-    .cancel-btn { background:#ccc; color:#333; border:none; margin-left:10px; }
-    .cancel-btn:hover { background:#999; }
+    :root { --accent-green: #2f9e44; --muted: #f6f7f8; --card: #ffffff; --text: #222; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: var(--muted);
+      color: var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* NAV */
+    .navbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background: #fff;
+      padding: 14px 24px;
+      box-shadow: 0 2px 8px rgba(16,24,40,0.04);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo { font-weight:700; letter-spacing: -0.2px; font-size: 1.1rem; color: var(--accent-green); }
+    .nav-links { display:flex; gap:10px; align-items:center; }
+    .nav-links a { text-decoration:none; padding:8px 12px; border-radius:8px; font-weight:600; color: #333; background: #fff; border:1px solid #eee; }
+    .nav-notif { position:relative; display:inline-block; }
+    .nav-notif .dot { position:absolute; top:6px; right:6px; width:8px; height:8px; background: var(--accent-green); border-radius:50%; }
+
+    /* HERO */
+    .hero {
+      padding: 28px 16px;
+      text-align:left;
+      background: #fff;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .hero h1 { margin: 0; font-size: 1.5rem; color: var(--accent-green); }
+    .hero p { margin: 8px 0 0; color: #666; }
+
+    /* JOB LIST */
+    #job-list { padding: 18px 12px 80px; max-width: 980px; margin: 0 auto; }
+    .job-card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 18px;
+      margin: 14px 0;
+      box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+      cursor: pointer;
+      transition: transform .14s ease, box-shadow .14s ease;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .job-card:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(16,24,40,0.06); }
+
+    .job-title { font-size: 1.15rem; font-weight: 700; margin-bottom:0; color: var(--accent-green); }
+    .job-roles, .job-desc, .job-skills, .company { color: var(--accent-green); margin: 0; font-weight:600; opacity:0.95; }
+    .meta { color: #555; font-size: 0.95rem; margin-top:6px; font-weight:500; }
+
+    /* Floating add button */
+    .add-job-btn {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #eee;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 28px;
+      cursor:pointer;
+      box-shadow: 0 10px 30px rgba(16,24,40,0.06);
+      z-index: 1000;
+    }
+    .add-job-btn:hover { transform: translateY(-4px); }
+
+    /* FORM MODAL (centered) */
+    .job-form-container {
+      display:none; /* toggled by JS */
+      position: fixed;
+      inset: 0;
+      z-index: 1100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0,0,0,0.35);
+    }
+    .job-form {
+      width: 100%;
+      max-width: 780px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 18px 60px rgba(8,15,30,0.12);
+      overflow:auto;
+      max-height: 92vh;
+    }
+    .job-form h2 { margin:0 0 12px; color: var(--accent-green); }
+    .row { display:flex; gap:12px; }
+    .col { flex:1; }
+
+    label { display:block; font-weight:600; margin:12px 0 6px; color: var(--accent-green); }
+    input[type="text"], input[type="number"], textarea, select {
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #e6e6e6;
+      background: #fff;
+      font-size:1rem;
+      color: #222;
+    }
+    textarea { min-height:120px; resize:vertical; }
+
+    .small { font-size:0.92rem; color:#666; margin-top:6px; }
+
+    .actions { margin-top:16px; display:flex; gap:10px; justify-content:flex-end; }
+    .btn-primary {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding:10px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn-submit {
+      background: var(--accent-green);
+      color: #fff;
+      border: none;
+      padding:10px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    /* small helper note */
+    .hint { font-size:0.92rem; color:#666; margin-top:6px; }
+
+    @media (max-width:880px) {
+      .row { flex-direction:column; }
+      .add-job-btn { right: 16px; bottom: 16px; width:52px; height:52px; font-size:24px; }
+    }
   </style>
 </head>
 <body>
+
   <nav class="navbar">
-    <div class="logo">Founditt.</div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div class="logo">Founditt</div>
+      <div class="hint">Recruiter Panel</div>
+    </div>
+
     <div class="nav-links">
-      <a href="#" class="chat">Chat</a>
-      <a href="#" class="profile">Profile</a>
-      <a href="#" class="logout">Logout</a>
+      <div class="nav-notif">
+        <a class="profile" href="#">Notifications</a>
+        <span class="dot" title="new"></span>
+      </div>
+      <a class="profile" href="#">Profile</a>
+      <a class="logout" href="#">Logout</a>
     </div>
   </nav>
 
   <section class="hero">
-    <h1>Welcome, Recruiter!</h1>
-    <p>Manage your job postings, applications, and chat with talents here.</p>
+    <h1>Create & Manage Jobs</h1>
+    <p>Click the <strong>＋</strong> button to open the job form. You can select existing entries or type new ones directly (single combined input).</p>
   </section>
 
-  <div id="job-list"></div>
+  <main id="job-list" aria-live="polite"></main>
 
-  <button class="add-job-btn" onclick="toggleForm()">＋</button>
+  <button class="add-job-btn" id="openForm" title="Add job">＋</button>
 
-  <div class="job-form-container" id="jobFormContainer">
-    <h2>Add New Job</h2>
-    <form id="jobForm" onsubmit="addJob(event)">
-      <label for="job_title">Job Title</label>
-      <input type="text" id="job_title" required>
-      
-      <label for="job_description">Job Description</label>
-      <input type="text" id="job_description" required>
-      
-      <label for="skillSelect">Select Required Skills</label>
-      <select id="skillSelect" multiple required></select>
-      
-      <label for="roleSelect">Select Job Roles</label>
-      <select id="roleSelect" multiple required></select>
-      
-      <label for="locationSelect">Select Job Location</label>
-      <select id="locationSelect" required></select>
-      
-      <label for="job_type">Select Job Type</label>
-      <select id="job_type" required></select>
-      
-      <label for="salary_min">Minimum Salary</label>
-      <input type="number" id="salary_min" required>
-      
-      <label for="salary_max">Maximum Salary</label>
-      <input type="number" id="salary_max" required>
-      
-      <label for="experience_level">Experience Level</label>
-      <select id="experience_level" required>
-          <option value="">Select Experience</option>
-          <option value="Internship">Internship</option>
-          <option value="Entry Level">Entry Level</option>
-          <option value="Mid Level">Mid Level</option>
-          <option value="Senior Level">Senior Level</option>
+  <!-- FORM MODAL -->
+  <div class="job-form-container" id="modal">
+    <form class="job-form" id="jobForm" onsubmit="submitJob(event)">
+      <h2>Post a New Job</h2>
+
+      <label for="job_title">Job title</label>
+      <input id="job_title" type="text" required />
+
+      <label for="job_description">Description</label>
+      <textarea id="job_description" required></textarea>
+
+      <div class="row">
+        <div class="col">
+          <label for="job_role_select">Roles (choose existing or type new)</label>
+          <select id="job_role_select" multiple style="width:100%"></select>
+          <div class="hint">Start typing to search roles — press Enter to add a new role.</div>
+        </div>
+
+        <div class="col">
+          <label for="skill_select">Skills (choose existing or type new)</label>
+          <select id="skill_select" multiple style="width:100%"></select>
+          <div class="hint">Start typing to search skills — press Enter to add a new skill.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label for="location_select">Location (choose or type)</label>
+          <select id="location_select" multiple style="width:100%"></select>
+          <div class="hint">You can add multiple locations; new entries will be created automatically.</div>
+        </div>
+
+        <div class="col">
+          <label for="jobtype_select">Job Type (choose or type)</label>
+          <select id="jobtype_select" multiple style="width:100%"></select>
+          <div class="hint">Common types: Full Time, Part Time, Contract. Type to add new.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label for="salary_min">Salary min</label>
+          <input id="salary_min" type="number" step="0.01" placeholder="e.g. 20000" />
+        </div>
+        <div class="col">
+          <label for="salary_max">Salary max</label>
+          <input id="salary_max" type="number" step="0.01" placeholder="e.g. 50000" />
+        </div>
+      </div>
+
+      <label for="experience_level">Experience level</label>
+      <select id="experience_level">
+        <option value="">Choose</option>
+        <option value="Internship">Internship</option>
+        <option value="Entry Level">Entry Level</option>
+        <option value="Mid Level">Mid Level</option>
+        <option value="Senior Level">Senior Level</option>
       </select>
 
-      
-      <label for="apply_email">Apply Email</label>
-      <input type="email" id="apply_email" required>
-      
-      <div>
-        <button type="submit">Post Job</button>
-        <button type="button" class="cancel-btn" onclick="toggleForm()">Cancel</button>
+      <label for="benefits">Benefits (short)</label>
+      <input id="benefits" type="text" placeholder="e.g. Health insurance, Remote friendly" />
+
+      <label for="apply_email">Apply email</label>
+      <input id="apply_email" type="email" placeholder="hr@company.com" />
+
+      <div class="actions">
+        <button type="button" class="btn-primary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Post Job</button>
       </div>
     </form>
   </div>
+
 <script>
-  axios.defaults.withCredentials = true;
-  const getCookie = name => document.cookie.split('; ').find(c => c.startsWith(name+'='))?.split('=')[1];
-  axios.defaults.headers.post['X-CSRFToken'] = getCookie('csrftoken');
+/* ========== Config ========== */
+const API_BASE = "/api";
+const ACCESS = localStorage.getItem("access"); // JWT token stored earlier
+const authHeader = ACCESS ? { Authorization: "Bearer " + ACCESS } : {};
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const jobFormContainer = document.getElementById("jobFormContainer");
-    window.toggleForm = () => jobFormContainer.style.display = jobFormContainer.style.display === "block" ? "none" : "block";
+/* ========== Helpers ========== */
+const el = id => document.getElementById(id);
+const textOfSelected = sel => Array.from(sel.selectedOptions).map(o => o.text.trim()).filter(Boolean);
 
-    const initSelect2 = (selector, url, placeholder) => {
-      $(selector).select2({
-        ajax: {
-          url, dataType:'json', delay:250,
-          data: params => ({ search: params.term }),
-          processResults: data => ({ results: data.map(d => ({ id: d.id, text: d.name })) }),
-          cache:true
-        },
-        placeholder, minimumInputLength:1, width:'resolve'
-      });
-    };
+/* ========== Modal toggles ========== */
+const modal = el("modal");
+const openForm = el("openForm");
+openForm.addEventListener("click", () => showModal());
+function showModal(){
+  modal.style.display = "flex";
+  // focus first input for quick typing
+  setTimeout(()=> el("job_title").focus(), 80);
+}
+function closeModal(){
+  modal.style.display = "none";
+  // tiny UX: return focus to + button
+  setTimeout(()=> openForm.focus(), 50);
+}
 
-    initSelect2('#skillSelect','http://127.0.0.1:8000/api/skills/','Search and select Skills');
-    initSelect2('#roleSelect','http://127.0.0.1:8000/api/jobroles/','Search and select Roles');
-    initSelect2('#locationSelect','http://127.0.0.1:8000/api/locations/','Search and select Location');
+/* click outside to close (nice UX) */
+modal.addEventListener("click", e => {
+  if(e.target === modal) closeModal();
+});
 
-    // Load Job Types
-    axios.get("http://127.0.0.1:8000/api/jobtype/").then(res => {
-      const select = document.getElementById("job_type");
-      select.innerHTML = '<option value="">Select Job Type</option>';
-      res.data.forEach(t => select.append(new Option(t.name, t.id)));
+/* ESC to close */
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape" && modal.style.display === "flex") closeModal();
+});
+
+/* ========== Initialize Select2 (tags + ajax) ========== */
+function initTagsSelect2(selector, url, placeholder){
+  $(selector).select2({
+    tags: true,               // allow typing new values
+    tokenSeparators: [','],   // comma separates
+    ajax: {
+      url,
+      dataType: 'json',
+      delay: 200,
+      data: params => ({ search: params.term }),
+      processResults: data => ({ results: data.map(d => ({ id: d.name || d.id || d, text: d.name || d })) }),
+      cache: true
+    },
+    placeholder,
+    minimumInputLength: 0,
+    width: '100%'
+  });
+}
+
+/* ========== Bootstrapping selects ========== */
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize taggable selects
+  initTagsSelect2("#skill_select", `${API_BASE}/skills/`, "Search or type skills...");
+  initTagsSelect2("#job_role_select", `${API_BASE}/jobroles/`, "Search or type roles...");
+  initTagsSelect2("#location_select", `${API_BASE}/locations/`, "Search or type locations...");
+  initTagsSelect2("#jobtype_select", `${API_BASE}/jobtype/`, "Search or type job types...");
+
+  // Load jobs into list
+  loadJobs();
+});
+
+/* ========== Load & render jobs ========== */
+async function loadJobs(){
+  try {
+    const res = await axios.get(`${API_BASE}/jobs/`);
+    const jobs = res.data || [];
+    const container = el("job-list");
+    container.innerHTML = "";
+    if(!jobs.length) return container.innerHTML = "<p style='text-align:center;color:#666'>No jobs yet</p>";
+
+    jobs.forEach(j => {
+      const card = document.createElement("div");
+      card.className = "job-card";
+      const roles = Array.isArray(j.job_role) ? j.job_role.map(r=>r.name).join(", ") : (j.job_role?.name || "");
+      const skills = Array.isArray(j.needed_skills)? j.needed_skills.map(s=>s.name).join(", ") : "";
+      const desc = j.job_description ? (j.job_description.length > 160 ? j.job_description.slice(0,160)+"…" : j.job_description) : "";
+
+      card.innerHTML = `
+        <div class="job-title">${escapeHtml(j.job_title || "Untitled")}</div>
+        <div class="job-roles">Role(s): ${escapeHtml(roles || "N/A")}</div>
+        <div class="job-desc">${escapeHtml(desc || "No description")}</div>
+        <div class="job-skills">Skills: ${escapeHtml(skills || "N/A")}</div>
+        <div class="company">Company: ${escapeHtml(j.job_company || "Unknown")}</div>
+        <div class="meta">Type: ${escapeHtml(j.job_type?.name || "N/A")} • Experience: ${escapeHtml(j.experience_level || "N/A")}</div>
+      `;
+      card.addEventListener("click", ()=> window.location.href = `/job/${j.id}/`);
+      container.appendChild(card);
     });
 
-    const loadJobs = () => {
-      axios.get("http://127.0.0.1:8000/api/jobs/").then(res => {
-        const container = document.getElementById("job-list");
-        container.innerHTML = "";
-        if (!res.data.length) return container.innerHTML = "<p style='text-align:center;'>No jobs available.</p>";
-        res.data.forEach(job => {
-          const card = document.createElement("div");
-          card.className = "job-card";
-          card.innerHTML = `
-            <h2 class="job-title">${job.job_title || "Untitled Role"}</h2>
-            <div class="company">${job.job_company || "Unknown Company"}</div>
-            <div class="details">
-              <strong>Experience:</strong> ${job.experience_level || "N/A"}<br/>
-              <strong>Roles:</strong> ${Array.isArray(job.job_role)?job.job_role.map(r=>r.name).join(", "):"N/A"}<br/>
-              <strong>Skills:</strong> ${Array.isArray(job.needed_skills)?job.needed_skills.map(s=>s.name).join(", "):"N/A"}<br/>
-              <strong>Type:</strong> ${job.job_type?.name || "N/A"}<br/>
-            </div>
-            <div class="salary">₹${parseInt(job.salary_min)||0} - ₹${parseInt(job.salary_max)||0}</div>
-            <div>
-              <a href="${job.job_company_website||"#"}" class="apply-btn" target="_blank">Visit Company</a>
-              <button class="delete-btn" onclick="event.stopPropagation(); deleteJob(${job.id})">Delete</button>
-            </div>
-          `;
-          card.addEventListener("click",()=>window.location.href=`/job/${job.id}/`);
-          container.appendChild(card);
-        });
-      }).catch(err => console.error("Failed to load jobs:", err.response?.data || err));
-    };
+  } catch (err) {
+    console.error("Failed to load jobs", err);
+    el("job-list").innerHTML = "<p style='text-align:center;color:#c00'>Failed to load jobs</p>";
+  }
+}
 
-    window.addJob = e => {
-      e.preventDefault();
-      const newJob = {
-        job_title: document.getElementById("job_title").value,
-        job_description: document.getElementById("job_description").value,
-        job_type: parseInt(document.getElementById("job_type").value),
-        experience_level: document.getElementById("experience_level").value,
-        salary_min: parseFloat(document.getElementById("salary_min").value),
-        salary_max: parseFloat(document.getElementById("salary_max").value),
-        location: parseInt(document.getElementById("locationSelect").value),
-        needed_skills: Array.from(document.getElementById("skillSelect").selectedOptions).map(o => parseInt(o.value)),
-        job_role: Array.from(document.getElementById("roleSelect").selectedOptions).map(o => parseInt(o.value)),
-        apply_email: document.getElementById("apply_email").value,
-        currency: "INR",
-        is_active: true
-      };
+/* ========== Submit job ========== */
+async function submitJob(e){
+  e.preventDefault();
 
-      axios.post("http://127.0.0.1:8000/api/jobs/", newJob)
-        .then(()=>{ 
-          alert("✅ Job posted successfully!"); 
-          document.getElementById("jobForm").reset(); 
-          toggleForm(); 
-          loadJobs(); 
-        })
-        .catch(err=>{
-          console.error("Job post failed:", err.response?.data || err);
-          if(err.response?.data) alert("❌ Failed to post job:\n" + JSON.stringify(err.response.data));
-          else alert("❌ Failed to post job. Check console for details.");
-        });
-    };
+  // select2 returns array of strings (names) when tags:true used
+  const skills_vals = $('#skill_select').val() || [];
+  const roles_vals = $('#job_role_select').val() || [];
+  const locations_vals = $('#location_select').val() || [];
+  const jobtypes_vals = $('#jobtype_select').val() || [];
 
-    window.deleteJob = async id => {
-      if(!confirm("Are you sure?")) return;
-      try {
-        await axios.delete(`http://127.0.0.1:8000/api/jobs/${id}/`, { headers:{ "X-CSRFToken": getCookie('csrftoken') } });
-        alert("✅ Job deleted successfully!"); loadJobs();
-      } catch (err) { 
-        console.error(err.response?.data || err);
-        alert("❌ Failed to delete job."); 
-      }
-    };
+  const payload = {
+    job_title: el("job_title").value.trim(),
+    job_description: el("job_description").value.trim(),
+    needed_skills_names: Array.from(new Set(skills_vals)),
+    job_role_names: Array.from(new Set(roles_vals)),
+    // pick first provided location/job type (serializer expects single string)
+    location_name: locations_vals.length ? locations_vals[0] : null,
+    job_type_name: jobtypes_vals.length ? jobtypes_vals[0] : null,
+    salary_min: el("salary_min").value ? parseFloat(el("salary_min").value) : null,
+    salary_max: el("salary_max").value ? parseFloat(el("salary_max").value) : null,
+    experience_level: el("experience_level").value || null,
+    benefits: el("benefits").value || "",
+    apply_email: el("apply_email").value || "",
+    currency: "INR",
+    is_active: true
+  };
 
+  if(!payload.job_title || !payload.job_description){
+    alert("Please fill job title and description.");
+    return;
+  }
+
+  try {
+    const headers = { "Content-Type":"application/json", ...authHeader };
+    await axios.post(`${API_BASE}/jobs/`, payload, { headers });
+    alert("✅ Job posted");
+    closeModal();
+    document.getElementById("jobForm").reset();
+    // Clear select2 selections
+    $("#skill_select").val(null).trigger("change");
+    $("#job_role_select").val(null).trigger("change");
+    $("#location_select").val(null).trigger("change");
+    $("#jobtype_select").val(null).trigger("change");
     loadJobs();
-  });
-</script>
+  } catch (err) {
+    console.error("Post failed:", err.response?.data || err);
+    const msg = err.response?.data ? JSON.stringify(err.response.data) : "Failed to post job";
+    alert("❌ " + msg);
+  }
+}
 
+/* ========== Delete job helper (uses JWT) ========== */
+async function deleteJob(id){
+  if(!confirm("Delete this job?")) return;
+  try {
+    const headers = {...authHeader};
+    await axios.delete(`${API_BASE}/jobs/${id}/`, { headers });
+    alert("✅ Deleted");
+    loadJobs();
+  } catch (err) {
+    console.error("delete failed", err);
+    alert("❌ Failed to delete job");
+  }
+}
+
+/* ========== Utility: escape HTML (prevent XSS) ========== */
+function escapeHtml(str){
+  if(!str) return "";
+  return String(str).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+}
+</script>
 </body>
 </html>
