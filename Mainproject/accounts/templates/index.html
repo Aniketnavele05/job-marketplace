@@ -180,7 +180,7 @@ async function fetchUserType(accessToken){
     return null;
 }
 
-// LOGIN FORM submit
+// LOGIN SUBMIT
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = loginForm.username.value;
@@ -191,12 +191,15 @@ loginForm.addEventListener('submit', async (e) => {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({username, password})
     });
+
     const data = await res.json();
+
     if(res.ok){
         localStorage.setItem('access', data.access);
         localStorage.setItem('refresh', data.refresh);
 
         const userInfo = await fetchUserType(data.access);
+
         if(userInfo){
             if(userInfo.user_type === 'talent'){
                 window.location.href = '/talent/';
@@ -209,9 +212,10 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-// REGISTRATION FORM submit
+// REGISTRATION SUBMIT
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const username = registerForm.username.value;
     const email = registerForm.email.value;
     const password = registerForm.password.value;
@@ -222,12 +226,15 @@ registerForm.addEventListener('submit', async (e) => {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({username, email, password, user_type})
     });
+
     const data = await res.json();
+
     if(res.ok){
         localStorage.setItem('access', data.access);
         localStorage.setItem('refresh', data.refresh);
 
         const userInfo = await fetchUserType(data.access);
+
         if(userInfo){
             if(userInfo.user_type === 'talent'){
                 window.location.href = '/talent/';
@@ -240,5 +247,6 @@ registerForm.addEventListener('submit', async (e) => {
     }
 });
 </script>
+
 </body>
 </html>

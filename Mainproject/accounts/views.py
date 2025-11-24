@@ -68,7 +68,6 @@ class UserInfoView(APIView):
 # ------------------------------------------
 # 🔹 DASHBOARD VIEWS
 # ------------------------------------------
-@login_required(login_url='/')
 def talent_dashboard(request):
     return render(request, 'talent_dashboard.html')
 

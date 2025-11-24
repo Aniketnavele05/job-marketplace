@@ -130,9 +130,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # -------------------------
 # Authentication Redirects (optional)
 # -------------------------
-LOGIN_URL = "login_view"
-LOGIN_REDIRECT_URL = "talent_dashboard"
-LOGOUT_REDIRECT_URL = "login_view"
+# LOGIN_URL = "login_view"
+# LOGIN_REDIRECT_URL = "talent_dashboard"
+# LOGOUT_REDIRECT_URL = "login_view"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':[

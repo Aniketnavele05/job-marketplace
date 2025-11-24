@@ -49,7 +49,8 @@ class JobContentSerializer(serializers.ModelSerializer):
     job_role = JobRoleSerializer(many=True, read_only=True)
     location = LocationSerializer(read_only=True)
     job_type = JobTypeSerializer(read_only=True)
-
+    recruiter = serializers.PrimaryKeyRelatedField(read_only=True)
+    
     # ---------------- WRITE ONLY (Recruiter Input) ---------------- #
     needed_skills_names = serializers.ListField(
         child=serializers.CharField(),
@@ -99,7 +100,6 @@ class JobContentSerializer(serializers.ModelSerializer):
 
         # Create job
         job = JobContent.objects.create(**validated_data)
-
         # Skills (Many-to-many)
         skill_list = []
         for skill_name in skills_data:
